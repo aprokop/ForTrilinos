@@ -3,7 +3,7 @@
 ## SPDX-License-Identifier: BSD-3-Clause
 ## License-Filename: LICENSE
 TRIBITS_COPY_FILES_TO_BINARY_DIR(Interface_cp
-  SOURCE_FILES stratimikos.xml davidson.xml LHS_matrix.mat RHS_matrix.mat
+  SOURCE_FILES stratimikos.xml davidson.xml LHS_matrix.mat RHS_matrix.mat nox_params.xml
  )
 
 IF (${PACKAGE_NAME}_ENABLE_Belos AND ${PACKAGE_NAME}_ENABLE_Ifpack2)
@@ -56,3 +56,9 @@ IF (${PACKAGE_NAME}_ENABLE_Anasazi)
     )
 
 ENDIF()
+
+TRIBITS_ADD_EXECUTABLE_AND_TEST(
+  test_nox_cpp
+  SOURCES test_nox.cpp
+  COMM serial mpi
+  )

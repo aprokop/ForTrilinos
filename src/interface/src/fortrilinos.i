@@ -22,3 +22,5 @@
 
 %include "solver_handle.hpp"
 %include "eigen_handle.hpp"
+
+/* %include "nox.i" */
