@@ -133,8 +133,8 @@ contains
   end function new_Linear2NodeFEBasis
 
   subroutine TpetraModelEvaluator1DFEM_update_x(self, x)
-    class(TpetraModelEvaluator1DFEM) :: self
-    type(TpetraMultiVector) :: x
+    class(TpetraModelEvaluator1DFEM), intent(in) :: self
+    class(TpetraMultiVector), intent(inout) :: x
     integer(size_type) :: num_vecs=1
 
     ! Create ghosted objects
@@ -210,8 +210,8 @@ contains
   end function create_mesh
 
   subroutine TpetraModelEvaluator1DFEM_eval_resid(self, f)
-    class(TpetraModelEvaluator1DFEM) :: self
-    type(TpetraMultiVector) :: f
+    class(TpetraModelEvaluator1DFEM), intent(in) :: self
+    class(TpetraMultiVector), intent(inout) :: f
     type(Linear2NodeFEBasis) :: basis
     integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, lclrow
     integer(size_type) :: col
@@ -276,10 +276,11 @@ contains
   end subroutine TpetraModelEvaluator1DFEM_eval_resid
 
   subroutine TpetraModelEvaluator1DFEM_eval_jac(self, J)
-    class(TpetraModelEvaluator1DFEM) :: self
-    type(TpetraCrsMatrix), intent(inout) :: J
+    class(TpetraModelEvaluator1DFEM), intent(in) :: self
+    class(TpetraOperator), intent(inout) :: J
+    type(TpetraCrsMatrix) :: Jmat
     type(Linear2NodeFEBasis) :: basis
-    integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, j
+    integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, jj
     integer(local_ordinal_type) :: lclrow, lclcol, numvalid
     integer(global_ordinal_type) :: gblrow, cols(1)
     real(scalar_type), dimension(:), pointer :: xdata
@@ -288,7 +289,7 @@ contains
     integer :: my_rank
     real(scalar_type) :: xx(2), uu(2), vals(1)
 
-    call J%setAllToScalar(zero)
+    call Jmat%setAllToScalar(zero)
 
     invalid = -1
     my_rank = self%comm%getRank()
@@ -320,15 +321,15 @@ contains
     lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i));
     if (lclrow /= invalid) then
       ! Loop over trial functions
-      do j=1, 2
-      lclcol = ne + j;
+      do jj=1, 2
+      lclcol = ne + jj;
       vals(1) = basis%wt * basis%dz &
-        * ((basis%dphide(j)*basis%dphide(i))/(basis%dz*basis%dz) &
-        + 2.0*basis%uu*basis%phi(j)*basis%phi(i))
+        * ((basis%dphide(jj)*basis%dphide(i))/(basis%dz*basis%dz) &
+        + 2.0*basis%uu*basis%phi(jj)*basis%phi(i))
       ! FIXME (TJF: May 2018) Should replace *GlobalValues with ! *LocalValues
       gblrow = self%x_owned_map%getGlobalElement(lclrow)
       cols(1) = self%x_ghosted_map%getGlobalElement(lclcol)
-      numvalid = J%sumIntoGlobalValues(gblrow, cols, vals)
+      numvalid = Jmat%sumIntoGlobalValues(gblrow, cols, vals)
       end do
     end if
     end do
@@ -340,24 +341,25 @@ contains
       cols(1) = 1;
       vals(1) = 1.0;
       ! FIXME (TJF: May 2018) Should replace *GlobalValues with ! *LocalValues
-      numvalid = J%replaceGlobalValues(gblrow, cols, vals)
+      numvalid = Jmat%replaceGlobalValues(gblrow, cols, vals)
       cols(1) = 2;
       vals(1) = 0.0;
       ! FIXME (TJF: May 2018) Should replace *GlobalValues with ! *LocalValues
-      numvalid = J%replaceGlobalValues(gblrow, cols, vals)
+      numvalid = Jmat%replaceGlobalValues(gblrow, cols, vals)
     end if
     end do
 
     nullify(xdata)
     nullify(udata)
 
-    call J%fillComplete()
+    call Jmat%fillComplete()
 
   end subroutine TpetraModelEvaluator1DFEM_eval_jac
 
   subroutine TpetraModelEvaluator1DFEM_eval_prec(self, M)
-    class(TpetraModelEvaluator1DFEM) :: self
-    type(TpetraCrsMatrix) :: M
+    class(TpetraModelEvaluator1DFEM), intent(in):: self
+    class(TpetraOperator), intent(inout) :: M
+    type(TpetraCrsMatrix) :: Mmat
     type(TpetraMap) :: row_map, col_map
     type(Linear2NodeFEBasis) :: basis
     integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, j
@@ -374,14 +376,14 @@ contains
     if (.not. allocated(self%J_diagonal)) then
       allocate(self%J_diagonal, source=TpetraMultiVector(self%x_owned_map, num_vecs))
     end if
-    call M%setAllToScalar(zero)
+    call Mmat%setAllToScalar(zero)
     call self%J_diagonal%putScalar(zero)
 
     invalid = -1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
-    row_map = M%getRowMap()
-    col_map = M%getColMap()
+    row_map = Mmat%getRowMap()
+    col_map = Mmat%getColMap()
 
     ! Loop Over # of Finite Elements on Processor
     xdata => self%x%getData(ione)
@@ -418,7 +420,7 @@ contains
         gblrow = self%x_owned_map%getGlobalElement(lclrow)
         cols(1) = self%x_ghosted_map%getGlobalElement(lclcol)
         ! FIXME (TJF: May 2018) Should replace *GlobalValues with ! *LocalValues
-        numvalid = M%sumIntoGlobalValues(gblrow, cols, vals)
+        numvalid = Mmat%sumIntoGlobalValues(gblrow, cols, vals)
       end if
       end do
     end if
@@ -431,7 +433,7 @@ contains
       cols(1) = 1;
       vals(1) = 1.0;
       ! FIXME (TJF: May 2018) Should replace *GlobalValues with ! *LocalValues
-      numvalid = M%replaceGlobalValues(gblrow, cols, vals)
+      numvalid = Mmat%replaceGlobalValues(gblrow, cols, vals)
     end if
     end do
 
@@ -440,13 +442,13 @@ contains
 
     ! Invert the Jacobian diagonal for the preconditioner
     ! For some reason the matrix must be fill complete before calling rightScale
-    call M%fillComplete()
+    call Mmat%fillComplete()
     diag = self%J_diagonal
     ! FIXME (TJF May 2018): getLocalDiagCopy is not implemented!
-    ! call M%getLocalDiagCopy(diag);
+    ! call Mmat%getLocalDiagCopy(diag);
     call diag%reciprocal(diag)
     ! FIXME (TJF May 2018): rightScale is not implemented!
-    ! call M%rightScale(diag)
+    ! call Mmat%rightScale(diag)
 
   end subroutine TpetraModelEvaluator1DFEM_eval_prec
 
