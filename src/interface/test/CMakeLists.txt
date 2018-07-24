@@ -63,9 +63,9 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   COMM serial mpi
   )
 
-TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  test_nox_fotran
-  SOURCES test_nox.f90
-  LINKER_LANGUAGE Fortran
-  COMM serial mpi
-  )
+# TRIBITS_ADD_EXECUTABLE_AND_TEST(
+  # test_nox_fotran
+  # SOURCES test_nox.f90
+  # LINKER_LANGUAGE Fortran
+  # COMM serial mpi
+  # )

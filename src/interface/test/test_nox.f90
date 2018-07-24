@@ -70,6 +70,7 @@ contains
     integer(global_size_type) :: num_nodes, invalid
     integer(global_ordinal_type) :: min_overlap_GID, gid
     integer(size_type) :: num_overlap_nodes
+    integer(size_type) :: num_vecs=1
     integer(global_ordinal_type), allocatable :: node_gids(:)
     type(TpetraCrsGraph) :: graph
 
@@ -115,7 +116,13 @@ contains
     self%node_coords = &
       self%create_mesh(self%x_owned_map, z_min, z_max, num_global_elems)
 
-    call self%setup(self%x_owned_map)
+    ! FIXME
+    ! call self%setup(self%x_owned_map)
+
+    allocate(self%u, source=TpetraMultiVector(self%x_ghosted_map, num_vecs))
+    allocate(self%x, source=TpetraMultiVector(self%x_ghosted_map, num_vecs))
+    call self%x%doImport(self%node_coords, self%importer, TpetraINSERT)
+    allocate(self%J_diagonal, source=TpetraMultiVector(self%x_owned_map, num_vecs))
 
   end function new_TpetraModelEvaluator1DFEM
 
@@ -134,19 +141,12 @@ contains
 
   subroutine TpetraModelEvaluator1DFEM_update_x(self, x)
     class(TpetraModelEvaluator1DFEM), intent(in) :: self
-    class(TpetraMultiVector), intent(inout) :: x
+    class(TpetraMultiVector), intent(in) :: x
     integer(size_type) :: num_vecs=1
 
     ! Create ghosted objects
-    if (.not. allocated(self%u)) then
-      allocate(self%u, source=TpetraMultiVector(self%x_ghosted_map, num_vecs))
-    end if
-    call self%u%doImport(x, self%importer, TpetraREPLACE)
-
-    if (.not. allocated(self%x)) then
-      allocate(self%x, source=TpetraMultiVector(self%x_ghosted_map, num_vecs))
-      call self%x%doImport(self%node_coords, self%importer, TpetraINSERT)
-    end if
+    ! FIXME
+    ! call self%u%doImport(x, self%importer, TpetraREPLACE)
   end subroutine TpetraModelEvaluator1DFEM_update_x
 
   function create_graph(self, owned_map, ghosted_map) result(graph)
@@ -377,11 +377,9 @@ contains
 
     Mmat = operator_to_matrix(M)
 
-    if (.not. allocated(self%J_diagonal)) then
-      allocate(self%J_diagonal, source=TpetraMultiVector(self%x_owned_map, num_vecs))
-    end if
     call Mmat%setAllToScalar(zero)
-    call self%J_diagonal%putScalar(zero)
+    ! FIXME
+    ! call self%J_diagonal%putScalar(zero)
 
     invalid = -1
     my_rank = self%comm%getRank()
@@ -447,7 +445,8 @@ contains
     ! Invert the Jacobian diagonal for the preconditioner
     ! For some reason the matrix must be fill complete before calling rightScale
     call Mmat%fillComplete()
-    diag = self%J_diagonal
+    ! FIXME
+    ! diag = self%J_diagonal
     ! FIXME (TJF May 2018): getLocalDiagCopy is not implemented!
     ! call Mmat%getLocalDiagCopy(diag);
     call diag%reciprocal(diag)
@@ -520,3 +519,5 @@ use, intrinsic :: ISO_C_BINDING
 #endif
 
 implicit none
+
+end program
