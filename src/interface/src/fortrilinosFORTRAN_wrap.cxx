@@ -563,13 +563,35 @@ SWIGINTERN SwigArrayWrapper SwigArrayWrapper_uninitialized() {
 
 extern "C" {
 /* Fortran BIND(C) function */
+void swigd_ForModelEvaluator_setup(
+        SwigClassWrapper const *fself,
+        SwigClassWrapper const *farg1,
+        SwigClassWrapper const *farg2
+        );
 void swigd_ForModelEvaluator_evaluate_residual(
         SwigClassWrapper const *fself,
         SwigClassWrapper const *farg1
         );
+void swigd_ForModelEvaluator_evaluate_jacobian(
+        SwigClassWrapper const *fself,
+        SwigClassWrapper const *farg1
+        );
+void swigd_ForModelEvaluator_evaluate_preconditioner(
+        SwigClassWrapper const *fself,
+        SwigClassWrapper const *farg1
+        );
+void swigd_ForModelEvaluator_update_x(
+        SwigClassWrapper const *fself,
+        SwigClassWrapper const *farg1
+        );
 }
+SwigClassWrapper swigd_ForModelEvaluator_create_operator(
+        SwigClassWrapper const *fself
+        );
 
 
+  // FIXME for some reason SWIG_NO_NULL_DELETER is included *after* this class definition
+#define SWIG_NO_NULL_DELETER_0 ,Teuchos::RCP_WEAK_NO_DEALLOC
   class ForModelEvaluator : public ForTrilinos::ModelEvaluator<SC,LO,GO,NO> {
     // Pointer to polymorphic fortran pointer
     void* fhandle_;
@@ -584,15 +606,30 @@ void swigd_ForModelEvaluator_evaluate_residual(
     typedef Tpetra::Operator<SC,LO,GO,NO> operator_type;
 
     void setup(const Teuchos::RCP<const map_type>& x_map,
-               const Teuchos::RCP<const map_type>& f_map) {}
+               const Teuchos::RCP<const map_type>& f_map) {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      /* convert X -> class wrapper */
+      SwigClassWrapper farg1;
+      farg1.ptr = const_cast<Teuchos::RCP<const map_type>*>(&x_map);
+      farg1.mem = SWIG_CREF; // x_map is mutable
+
+      SwigClassWrapper farg2;
+      farg2.ptr = const_cast<Teuchos::RCP<const map_type>*>(&f_map);
+      farg2.mem = SWIG_CREF; // x_map is mutable
+
+      swigd_ForModelEvaluator_setup(&self, &farg1, &farg2);
+    }
 
     virtual void evaluate_residual(Teuchos::RCP<multivector_type>& f) const override {
       /* construct "this" pointer */
-      // FIXME for some reason SWIG_NO_NULL_DELETER is included *after* this class definition
-      /* Teuchos::RCP<ForModelEvaluator> tempthis( */
-             /* const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0); */
       Teuchos::RCP<ForModelEvaluator> tempthis(
-             const_cast<ForModelEvaluator*>(this), Teuchos::RCP_WEAK_NO_DEALLOC);
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
       SwigClassWrapper self;
       self.ptr = &tempthis;
       self.mem = SWIG_CREF; // since this function is const
@@ -605,19 +642,69 @@ void swigd_ForModelEvaluator_evaluate_residual(
       swigd_ForModelEvaluator_evaluate_residual(&self, &farg1);
     }
 
-    virtual void evaluate_jacobian(Teuchos::RCP<operator_type>& J) const override
-    { }
+    virtual void evaluate_jacobian(Teuchos::RCP<operator_type>& J) const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
 
-    virtual void evaluate_preconditioner(Teuchos::RCP<operator_type>& J) const override
-    {
+      /* convert X -> class wrapper */
+      SwigClassWrapper farg1;
+      farg1.ptr = &J;
+      farg1.mem = SWIG_REF; // f is mutable
+
+      swigd_ForModelEvaluator_evaluate_jacobian(&self, &farg1);
     }
 
-    virtual void update_x(const Teuchos::RCP<const multivector_type>& x) const override
-    { }
+    virtual void evaluate_preconditioner(Teuchos::RCP<operator_type>& M) const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
 
-    virtual Teuchos::RCP<operator_type> create_operator() const override
-    { return Teuchos::null; }
+      /* convert X -> class wrapper */
+      SwigClassWrapper farg1;
+      farg1.ptr = &M;
+      farg1.mem = SWIG_REF; // f is mutable
+
+      swigd_ForModelEvaluator_evaluate_preconditioner(&self, &farg1);
+    }
+
+    virtual void update_x(const Teuchos::RCP<const multivector_type>& x) const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      /* convert X -> class wrapper */
+      SwigClassWrapper farg1;
+      farg1.ptr = const_cast<Teuchos::RCP<const multivector_type>*>(&x);
+      farg1.mem = SWIG_CREF; // x is const
+
+      swigd_ForModelEvaluator_evaluate_preconditioner(&self, &farg1);
+    }
+
+    virtual Teuchos::RCP<operator_type> create_operator() const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      SwigClassWrapper fresult = swigd_ForModelEvaluator_create_operator(&self);
+
+      Teuchos::RCP<operator_type>* smartresult = static_cast< Teuchos::RCP<operator_type>* >(fresult.ptr);
+      return *smartresult;
+    }
   };
+#undef SWIG_NO_NULL_DELETER_0
 
 
 #define SWIG_NO_NULL_DELETER_0 , Teuchos::RCP_WEAK_NO_DEALLOC
