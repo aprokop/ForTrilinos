@@ -289,6 +289,8 @@ contains
     integer :: my_rank
     real(scalar_type) :: xx(2), uu(2), vals(1)
 
+    Jmat = operator_to_matrix(J)
+
     call Jmat%setAllToScalar(zero)
 
     invalid = -1
@@ -372,6 +374,8 @@ contains
     integer(size_type) :: num_vecs=1
     integer :: my_rank
     real(scalar_type) :: xx(2), uu(2), vals(1)
+
+    Mmat = operator_to_matrix(M)
 
     if (.not. allocated(self%J_diagonal)) then
       allocate(self%J_diagonal, source=TpetraMultiVector(self%x_owned_map, num_vecs))
