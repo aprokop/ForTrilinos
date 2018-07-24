@@ -39,8 +39,10 @@ namespace ForTrilinos {
     typedef ::Thyra::PreconditionerBase<SC>         ThyraPrec;
 
   public:
-    void setup(const Teuchos::RCP<const Map>& x_map,
-               const Teuchos::RCP<const Map>& f_map);
+    void set_maps(const Teuchos::RCP<const Map>& x_map,
+                  const Teuchos::RCP<const Map>& f_map);
+
+    void setup_linear_solver(Teuchos::RCP<Teuchos::ParameterList>& plist);
 
     virtual void evaluate_residual(const Teuchos::RCP<const MultiVector>& x,
                                    Teuchos::RCP<MultiVector>& f) const = 0;
@@ -63,6 +65,9 @@ namespace ForTrilinos {
 
 #ifndef SWIG
   public:
+    Teuchos::RCP<Thyra::VectorBase<Scalar>> initial_guess;
+    Teuchos::RCP<Thyra::LinearOpWithSolveFactoryBase<Scalar>> lows_factory;
+
     // FIXME: These should not be public
     void set_W_factory(const Teuchos::RCP<const ::Thyra::LinearOpWithSolveFactoryBase<SC>>& W_factory) {
       W_factory_ = W_factory;

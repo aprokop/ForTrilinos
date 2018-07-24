@@ -82,7 +82,7 @@ TpetraModelEvaluator1DFEM(const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
   resid_timer_ = Teuchos::TimeMonitor::getNewCounter("Model Evaluator: Residual Evaluation");
   jac_timer_ = Teuchos::TimeMonitor::getNewCounter("Model Evaluator: Jacobian Evaluation");
 
-  this->setup(x_owned_map_, Teuchos::null);
+  this->set_maps(x_owned_map_, Teuchos::null);
 }
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>

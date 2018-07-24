@@ -15,6 +15,11 @@
 #include "Thyra_VectorStdOps.hpp"
 #include "Thyra_PreconditionerBase.hpp"
 
+#include <BelosTypes.hpp>
+#include <Stratimikos_DefaultLinearSolverBuilder.hpp>
+#include <Thyra_LinearOpWithSolveFactoryHelpers.hpp>
+#include <Thyra_Ifpack2PreconditionerFactory.hpp>
+
 // Tpetra support
 #include "Thyra_TpetraThyraWrappers.hpp"
 
@@ -23,11 +28,10 @@
 
 namespace ForTrilinos {
 
-
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void ModelEvaluator<Scalar,LocalOrdinal,GlobalOrdinal,Node>::
-  setup(const Teuchos::RCP<const Map>& x_map,
-        const Teuchos::RCP<const Map>& f_map) {
+  set_maps(const Teuchos::RCP<const Map>& x_map,
+           const Teuchos::RCP<const Map>& f_map) {
     TEUCHOS_ASSERT(nonnull(x_map));
 
     typedef ::Thyra::ModelEvaluatorBase MEB;
@@ -57,6 +61,37 @@ namespace ForTrilinos {
 
     nominal_values_ = in_args;
     nominal_values_.set_x(x0_);
+  }
+
+  template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ModelEvaluator<Scalar,LocalOrdinal,GlobalOrdinal,Node>::
+  setup_linear_solver(Teuchos::RCP<Teuchos::ParameterList>& plist)
+  {
+    Stratimikos::DefaultLinearSolverBuilder builder;
+
+    auto p = Teuchos::rcpFromRef(plist->sublist("Linear Solver Settings"));
+
+    std::string prec = p->get("Preconditioner Type", "None");
+    if (prec == "None") {
+      // Do nothing
+    } else if (prec == "Ifpack2") {
+      using Base = Thyra::PreconditionerFactoryBase<Scalar>;
+      using Impl = Thyra::Ifpack2PreconditionerFactory<Tpetra::CrsMatrix<Scalar,LO,GO,Node>>;
+      builder.setPreconditioningStrategyFactory(Teuchos::abstractFactoryStd<Base, Impl>(), "Ifpack2");
+    } else {
+      TEUCHOS_TEST_FOR_EXCEPTION(true, std::invalid_argument,
+        "Preconditioner Type must be one of 'None', 'Ifpack2'")
+    }
+    builder.setParameterList(p);
+
+    lows_factory = builder.createLinearSolveStrategy("");
+
+    set_W_factory(lows_factory);
+
+    // Create the initial guess
+    initial_guess = getNominalValues().get_x()->clone_v();
+    Thyra::V_S(initial_guess.ptr(),Teuchos::ScalarTraits<Scalar>::one());
+
   }
 
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>

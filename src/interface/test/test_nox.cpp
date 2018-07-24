@@ -53,6 +53,9 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
   RCP<TpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>> model =
     tpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>(comm, numGlobalElements, x00, x01);
 
+#if 1
+  model->setup_linear_solver(plist);
+#else
   Stratimikos::DefaultLinearSolverBuilder builder;
 
   {
@@ -81,6 +84,7 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
   RCP<Thyra::VectorBase<Scalar>> initial_guess =
     model->getNominalValues().get_x()->clone_v();
   Thyra::V_S(initial_guess.ptr(),Teuchos::ScalarTraits<Scalar>::one());
+#endif
 
   // Create the JFNK operator
   std::string jtype;
@@ -95,8 +99,8 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
     if (jtype == "Analytic") {
 
       // Create the NOX::Thyra::Group
-      nox_group = rcp(new NOX::Thyra::Group(*initial_guess, model,
-                                            model->create_W_op(), lows_factory,
+      nox_group = rcp(new NOX::Thyra::Group(*(model->initial_guess), model,
+                                            model->create_W_op(), model->lows_factory,
                                             Teuchos::null, Teuchos::null));
 
     } else {
@@ -116,15 +120,15 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
           prec_op = thyra_model->create_W_prec();
 
         // Create the NOX::Thyra::Group
-        nox_group = rcp(new NOX::Thyra::Group(*initial_guess, thyra_model, jfnk_op,
-                                              lows_factory, prec_op, Teuchos::null));
+        nox_group = rcp(new NOX::Thyra::Group(*(model->initial_guess), thyra_model, jfnk_op,
+                                              model->lows_factory, prec_op, Teuchos::null));
 
       }
     }
   } else {
     // Default to Analytic Jacobian
-    nox_group = rcp(new NOX::Thyra::Group(*initial_guess, model,
-                                          model->create_W_op(), lows_factory,
+    nox_group = rcp(new NOX::Thyra::Group(*(model->initial_guess), model,
+                                          model->create_W_op(), model->lows_factory,
                                           Teuchos::null, Teuchos::null));
   }
 
