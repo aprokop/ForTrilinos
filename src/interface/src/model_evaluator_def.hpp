@@ -110,22 +110,20 @@ namespace ForTrilinos {
     Teuchos::RCP<const MultiVector> x =
         tpetra_extract::getConstTpetraMultiVector(in_args.get_x());
 
-    update_x(x);
-
     if (fill_f) {
       // Get the underlying tpetra objects
       Teuchos::RCP<MultiVector> f = tpetra_extract::getTpetraMultiVector(f_out);
-      evaluate_residual(f);
+      evaluate_residual(x, f);
     }
 
     if (fill_W) {
       Teuchos::RCP<Operator> W_tpetra = tpetra_extract::getTpetraOperator(W_out);
-      evaluate_jacobian(W_tpetra);
+      evaluate_jacobian(x, W_tpetra);
     }
 
     if (fill_W_prec) {
       Teuchos::RCP<Operator> M_tpetra = tpetra_extract::getTpetraOperator(W_prec_out->getNonconstRightPrecOp());
-      evaluate_preconditioner(M_tpetra);
+      evaluate_preconditioner(x, M_tpetra);
     }
   }
 

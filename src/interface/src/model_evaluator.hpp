@@ -42,19 +42,22 @@ namespace ForTrilinos {
     void setup(const Teuchos::RCP<const Map>& x_map,
                const Teuchos::RCP<const Map>& f_map);
 
-    virtual void evaluate_residual(Teuchos::RCP<MultiVector>& f) const = 0;
+    virtual void evaluate_residual(const Teuchos::RCP<const MultiVector>& x,
+                                   Teuchos::RCP<MultiVector>& f) const = 0;
 
-    virtual void evaluate_jacobian(Teuchos::RCP<Operator>& J) const {
+    virtual void evaluate_jacobian(const Teuchos::RCP<const MultiVector>& x,
+                                   Teuchos::RCP<Operator>& J) const
+    {
       TEUCHOS_TEST_FOR_EXCEPTION(true, std::invalid_argument,
         "evaluate_jacobian must be implemented by derived classes");
     }
 
-    virtual void evaluate_preconditioner(Teuchos::RCP<Operator>& J) const {
+    virtual void evaluate_preconditioner(const Teuchos::RCP<const MultiVector>& x,
+                                         Teuchos::RCP<Operator>& J) const
+    {
       TEUCHOS_TEST_FOR_EXCEPTION(true, std::invalid_argument,
         "evaluate_preconditioner must be implemented by derived classes");
     }
-
-    virtual void update_x(const Teuchos::RCP<const MultiVector>& x) const = 0;
 
     virtual Teuchos::RCP<Operator> create_operator() const = 0;
 

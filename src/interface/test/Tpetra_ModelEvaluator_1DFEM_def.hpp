@@ -153,7 +153,7 @@ create_operator() const
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
 void TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-update_x(const Teuchos::RCP<const MultiVector>& x) const
+update_solution_vector(const Teuchos::RCP<const MultiVector>& xp) const
 {
   typedef Kokkos::HostSpace host_space;
 
@@ -161,7 +161,7 @@ update_x(const Teuchos::RCP<const MultiVector>& x) const
   if (is_null(u_ptr_))
     u_ptr_ = Teuchos::rcp(new MultiVector(x_ghosted_map_, 1));
   u_ptr_->template modify<host_space>();
-  u_ptr_->doImport(*x, *importer_, Tpetra::REPLACE);
+  u_ptr_->doImport(*xp, *importer_, Tpetra::REPLACE);
 
   if (is_null(x_ptr_)) {
     x_ptr_ = Teuchos::rcp(new MultiVector(x_ghosted_map_, 1));
@@ -175,8 +175,12 @@ update_x(const Teuchos::RCP<const MultiVector>& x) const
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
 void TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-evaluate_residual(Teuchos::RCP<MultiVector>& f) const
+evaluate_residual(const Teuchos::RCP<const MultiVector>& xp,
+                  Teuchos::RCP<MultiVector>& f) const
 {
+
+  // Update the solution variable
+  update_solution_vector(xp);
 
   typedef Kokkos::HostSpace host_space;
 
@@ -236,8 +240,13 @@ evaluate_residual(Teuchos::RCP<MultiVector>& f) const
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
 void TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-evaluate_jacobian(Teuchos::RCP<Operator>& op) const
+evaluate_jacobian(const Teuchos::RCP<const MultiVector>& xp,
+                  Teuchos::RCP<Operator>& op) const
 {
+
+  // Update the solution variable
+  update_solution_vector(xp);
+
   Teuchos::RCP<Matrix> J = Teuchos::rcp_dynamic_cast<Matrix>(op);
   TEUCHOS_ASSERT(nonnull(J));
   J->resumeFill();
@@ -306,8 +315,12 @@ evaluate_jacobian(Teuchos::RCP<Operator>& op) const
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
 void TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-evaluate_preconditioner(Teuchos::RCP<Operator>& op) const
+evaluate_preconditioner(const Teuchos::RCP<const MultiVector>& xp,
+                        Teuchos::RCP<Operator>& op) const
 {
+
+  // Update the solution variable
+  update_solution_vector(xp);
 
   Teuchos::RCP<Matrix> M_inv = Teuchos::rcp_dynamic_cast<Matrix>(op);
   TEUCHOS_ASSERT(nonnull(M_inv));

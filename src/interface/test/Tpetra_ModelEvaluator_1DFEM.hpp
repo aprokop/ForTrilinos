@@ -78,20 +78,24 @@ public:
                             const SC z_min, const SC z_max);
 
   /** Evaluate the FE residual */
-  void evaluate_residual(Teuchos::RCP<MultiVector>&) const override;
+  void evaluate_residual(const Teuchos::RCP<const MultiVector>&,
+                         Teuchos::RCP<MultiVector>&) const override;
 
   /** Evaluate the stiffness (Jacobian) */
-  void evaluate_jacobian(Teuchos::RCP<Operator>&) const override;
+  void evaluate_jacobian(const Teuchos::RCP<const MultiVector>&,
+                         Teuchos::RCP<Operator>&) const override;
 
   /** Evaluate the preconditioner */
-  void evaluate_preconditioner(Teuchos::RCP<Operator>&) const override;
-
-  void update_x(const Teuchos::RCP<const MultiVector>& x) const override;
+  void evaluate_preconditioner(const Teuchos::RCP<const MultiVector>&,
+                               Teuchos::RCP<Operator>&) const override;
 
   /** Create the Tpetra operator **/
   Teuchos::RCP<Operator> create_operator() const override;
 
 private:
+
+  /** Update the solution vector **/
+  void update_solution_vector(const Teuchos::RCP<const MultiVector>&) const;
 
   /** Creates the 1D mesh */
   Teuchos::RCP<MultiVector>
