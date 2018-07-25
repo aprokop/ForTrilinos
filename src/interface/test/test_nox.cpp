@@ -29,10 +29,10 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
   using Teuchos::rcp;
 
   // Get default Tpetra template types
-  using Scalar = double;
-  using LO     = int;
-  using GO     = long long;
-  using Node   = Kokkos::Compat::KokkosSerialWrapperNode;
+  using Scalar = Tpetra::CrsMatrix<>::scalar_type;
+  using LO = Tpetra::CrsMatrix<>::local_ordinal_type;
+  using GO = Tpetra::CrsMatrix<>::global_ordinal_type;
+  using Node = Tpetra::CrsMatrix<>::node_type;
 
   Teuchos::TimeMonitor::zeroOutTimers();
 
@@ -43,8 +43,6 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
 
   ForTrilinos::NOXSolver<Scalar,LO,GO,Node> nox_solver(model);
   nox_solver.build(plist);
-  nox_solver.solve();
-
   NOX::StatusTest::StatusType solve_status = nox_solver.solve();
 
   int returncode = (solve_status == NOX::StatusTest::Converged) ? 0 : 1;
