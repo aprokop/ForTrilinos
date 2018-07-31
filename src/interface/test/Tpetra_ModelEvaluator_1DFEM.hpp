@@ -26,7 +26,8 @@ class TpetraModelEvaluator1DFEM;
  */
 template<class SC, class LO, class GO, class NO>
 Teuchos::RCP<TpetraModelEvaluator1DFEM<SC, LO, GO, NO>>
-tpetraModelEvaluator1DFEM(const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
+tpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
+                          const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
                           const Tpetra::global_size_t num_global_elems,
                           const SC z_min, const SC z_max);
 
@@ -73,7 +74,8 @@ public:
 
 
   // Constructor
-  TpetraModelEvaluator1DFEM(const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
+  TpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
+                            const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
                             const Tpetra::global_size_t num_global_elems,
                             const SC z_min, const SC z_max);
 

@@ -38,8 +38,7 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
 
   // Create the model evaluator object
   RCP<TpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>> model =
-    tpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>(comm, numGlobalElements, 0.0, 1.0);
-  model->setup_linear_solver(plist);
+    tpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>(plist, comm, numGlobalElements, 0.0, 1.0);
 
   ForTrilinos::NOXSolver<Scalar,LO,GO,Node> nox_solver(model);
   nox_solver.build(plist);
