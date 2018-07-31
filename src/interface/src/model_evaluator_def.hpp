@@ -59,6 +59,7 @@ namespace ForTrilinos {
     MEB::InArgsSetup<SC> in_args;
     in_args.setModelEvalDescription(this->description());
     in_args.setSupports(MEB::IN_ARG_x);
+    // TODO: Can call in_args.set_Np based on value in parameter list?
     prototype_in_args_ = in_args;
 
     MEB::OutArgsSetup<SC> out_args;
@@ -66,6 +67,7 @@ namespace ForTrilinos {
     out_args.setSupports(MEB::OUT_ARG_f);
     out_args.setSupports(MEB::OUT_ARG_W_op);
     out_args.setSupports(MEB::OUT_ARG_W_prec);
+    // TODO: Can call out_args.set_Np_Ng based on value in parameter list?
     prototype_out_args_ = out_args;
 
     nominal_values_ = in_args;
