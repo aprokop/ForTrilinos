@@ -39,11 +39,6 @@ namespace ForTrilinos {
     typedef ::Thyra::PreconditionerBase<SC>         ThyraPrec;
 
   public:
-    void set_maps(const Teuchos::RCP<const Map>& x_map,
-                  const Teuchos::RCP<const Map>& f_map);
-
-    void setup_linear_solver(Teuchos::RCP<Teuchos::ParameterList>& plist);
-
     virtual void evaluate_residual(const Teuchos::RCP<const MultiVector>& x,
                                    Teuchos::RCP<MultiVector>& f) const = 0;
 
@@ -84,7 +79,9 @@ namespace ForTrilinos {
         : show_get_invalid_arg_(false)
     { }
 
-    void set_x0(const Teuchos::ArrayView<const SC> &x0);
+    void initialize_base(Teuchos::RCP<Teuchos::ParameterList>& plist,
+                         const Teuchos::RCP<const Map>& x_map,
+                         const Teuchos::RCP<const Map>& f_map);
 
     void setShowGetInvalidArgs(bool show_get_invalid_arg) {
       show_get_invalid_arg_ = show_get_invalid_arg;
@@ -111,6 +108,8 @@ namespace ForTrilinos {
 
   private:
 
+    void set_x0(const Teuchos::ArrayView<const SC> &x0);
+
     // Private functions overridden from ModelEvaulatorDefaultBase. */
     ::Thyra::ModelEvaluatorBase::OutArgs<SC> createOutArgsImpl() const {
       return prototype_out_args_;
@@ -118,6 +117,13 @@ namespace ForTrilinos {
 
     void evalModelImpl(const ::Thyra::ModelEvaluatorBase::InArgs<SC> &in_args,
                        const ::Thyra::ModelEvaluatorBase::OutArgs<SC> &out_args) const;
+
+  private:
+
+    void set_x_f_maps(const Teuchos::RCP<const Map>& x_map,
+                      const Teuchos::RCP<const Map>& f_map);
+
+    void setup_linear_solver(Teuchos::RCP<Teuchos::ParameterList>& plist);
 
   private:
 

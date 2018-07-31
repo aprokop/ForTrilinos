@@ -30,8 +30,17 @@ namespace ForTrilinos {
 
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void ModelEvaluator<Scalar,LocalOrdinal,GlobalOrdinal,Node>::
-  set_maps(const Teuchos::RCP<const Map>& x_map,
-           const Teuchos::RCP<const Map>& f_map) {
+  initialize_base(Teuchos::RCP<Teuchos::ParameterList>& plist,
+                  const Teuchos::RCP<const Map>& x_map,
+                  const Teuchos::RCP<const Map>& f_map) {
+    this->set_x_f_maps(x_map, f_map);
+    this->setup_linear_solver(plist);
+  }
+
+  template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  void ModelEvaluator<Scalar,LocalOrdinal,GlobalOrdinal,Node>::
+  set_x_f_maps(const Teuchos::RCP<const Map>& x_map,
+               const Teuchos::RCP<const Map>& f_map) {
     TEUCHOS_ASSERT(nonnull(x_map));
 
     typedef ::Thyra::ModelEvaluatorBase MEB;
