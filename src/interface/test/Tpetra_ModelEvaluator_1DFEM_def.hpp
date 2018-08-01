@@ -12,23 +12,11 @@
 
 // Nonmember constuctors
 
-template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
-Teuchos::RCP<TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-tpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
-                          const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
-                          const Tpetra::global_size_t num_global_elems,
-                          const Scalar z_min,
-                          const Scalar z_max)
-{
-  return Teuchos::rcp(new TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>(plist,comm,num_global_elems,z_min,z_max));
-}
-
 // Constructor
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
 TpetraModelEvaluator1DFEM<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-TpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
-                          const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
+TpetraModelEvaluator1DFEM(const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
                           const Tpetra::global_size_t num_global_elems,
                           const Scalar z_min,
                           const Scalar z_max) :
@@ -84,7 +72,6 @@ TpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
   resid_timer_ = Teuchos::TimeMonitor::getNewCounter("Model Evaluator: Residual Evaluation");
   jac_timer_ = Teuchos::TimeMonitor::getNewCounter("Model Evaluator: Jacobian Evaluation");
 
-  this->initialize_base(plist, x_owned_map_, Teuchos::null);
 }
 
 template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>

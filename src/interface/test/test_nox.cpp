@@ -17,8 +17,6 @@
 #include "Tpetra_ModelEvaluator_1DFEM.hpp"
 #include "nox_solver.hpp"
 
-const Tpetra::global_size_t numGlobalElements = 100;
-
 
 // Sets up and runs the nonlinear optimization in NOX
 int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
@@ -37,11 +35,12 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
   Teuchos::TimeMonitor::zeroOutTimers();
 
   // Create the model evaluator object
-  RCP<TpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>> model =
-    tpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>(plist, comm, numGlobalElements, 0.0, 1.0);
+  RCP<TpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>> evaluator =
+    rcp(new TpetraModelEvaluator1DFEM<Scalar,LO,GO,Node>(comm, 100, 0.0, 1.0));
+  evaluator->setup(plist);
 
-  ForTrilinos::NOXSolver<Scalar,LO,GO,Node> nox_solver(model);
-  nox_solver.build(plist);
+  ForTrilinos::NOXSolver<Scalar,LO,GO,Node> nox_solver(evaluator);
+  nox_solver.setup(plist);
   NOX::StatusTest::StatusType solve_status = nox_solver.solve();
 
   int returncode = (solve_status == NOX::StatusTest::Converged) ? 0 : 1;

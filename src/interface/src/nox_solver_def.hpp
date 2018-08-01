@@ -22,7 +22,7 @@ namespace ForTrilinos {
 
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void NOXSolver<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-  build(Teuchos::RCP<Teuchos::ParameterList>& plist)
+  setup(Teuchos::RCP<Teuchos::ParameterList>& plist)
   {
 
     using Teuchos::RCP;

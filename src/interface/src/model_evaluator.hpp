@@ -56,6 +56,8 @@ namespace ForTrilinos {
         "evaluate_preconditioner must be implemented by derived classes");
     }
 
+    virtual Teuchos::RCP<const Map> get_x_map() const = 0;
+    virtual Teuchos::RCP<const Map> get_f_map() const = 0;
     virtual Teuchos::RCP<Operator> create_operator() const = 0;
 
 #ifndef SWIG
@@ -74,14 +76,12 @@ namespace ForTrilinos {
     }
 #endif
 
+    void setup(Teuchos::RCP<Teuchos::ParameterList>& plist);
+
   protected:
     ModelEvaluator()
         : show_get_invalid_arg_(false)
     { }
-
-    void initialize_base(Teuchos::RCP<Teuchos::ParameterList>& plist,
-                         const Teuchos::RCP<const Map>& x_map,
-                         const Teuchos::RCP<const Map>& f_map);
 
     void setShowGetInvalidArgs(bool show_get_invalid_arg) {
       show_get_invalid_arg_ = show_get_invalid_arg;
@@ -120,8 +120,9 @@ namespace ForTrilinos {
 
   private:
 
-    void set_x_f_maps(const Teuchos::RCP<const Map>& x_map,
-                      const Teuchos::RCP<const Map>& f_map);
+    void setup_in_out_args(Teuchos::RCP<Teuchos::ParameterList>& plist,
+                           const Teuchos::RCP<const Map>& x_map,
+                           const Teuchos::RCP<const Map>& f_map);
 
     void setup_linear_solver(Teuchos::RCP<Teuchos::ParameterList>& plist);
 

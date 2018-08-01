@@ -20,18 +20,6 @@
 template<class SC, class LO, class GO, class NO>
 class TpetraModelEvaluator1DFEM;
 
-/** \brief Nonmember constuctor.
- *
- * \relates TpetraModelEvaluator1DFEM
- */
-template<class SC, class LO, class GO, class NO>
-Teuchos::RCP<TpetraModelEvaluator1DFEM<SC, LO, GO, NO>>
-tpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
-                          const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
-                          const Tpetra::global_size_t num_global_elems,
-                          const SC z_min, const SC z_max);
-
-
 /** \brief 1D Finite Element model for nonlinear heat conduction
  *
  * The equation modeled is:
@@ -74,8 +62,7 @@ public:
 
 
   // Constructor
-  TpetraModelEvaluator1DFEM(Teuchos::RCP<Teuchos::ParameterList>& plist,
-                            const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
+  TpetraModelEvaluator1DFEM(const Teuchos::RCP<const Teuchos::Comm<int>>& comm,
                             const Tpetra::global_size_t num_global_elems,
                             const SC z_min, const SC z_max);
 
@@ -129,6 +116,9 @@ private: // data members
   mutable Teuchos::RCP<Vector> J_diagonal_;
   mutable Teuchos::RCP<Teuchos::Time> resid_timer_;
   mutable Teuchos::RCP<Teuchos::Time> jac_timer_;
+
+  Teuchos::RCP<const Map> get_x_map() const override {return x_owned_map_;}
+  Teuchos::RCP<const Map> get_f_map() const override {return Teuchos::null;}
 };
 
 

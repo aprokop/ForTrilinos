@@ -26,7 +26,7 @@ namespace ForTrilinos {
   public:
 
     NOXSolver(const Teuchos::RCP<ModelEvaluator<Scalar, LocalOrdinal, GlobalOrdinal, Node>>& model);
-    void build(Teuchos::RCP<Teuchos::ParameterList>& plist);
+    void setup(Teuchos::RCP<Teuchos::ParameterList>& plist);
     NOX::StatusTest::StatusType solve();
 
   private:

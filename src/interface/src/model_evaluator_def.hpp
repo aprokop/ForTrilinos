@@ -30,23 +30,33 @@ namespace ForTrilinos {
 
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void ModelEvaluator<Scalar,LocalOrdinal,GlobalOrdinal,Node>::
-  initialize_base(Teuchos::RCP<Teuchos::ParameterList>& plist,
-                  const Teuchos::RCP<const Map>& x_map,
-                  const Teuchos::RCP<const Map>& f_map) {
-    this->set_x_f_maps(x_map, f_map);
-    this->setup_linear_solver(plist);
+  setup(Teuchos::RCP<Teuchos::ParameterList>& plist) {
+    TEUCHOS_TEST_FOR_EXCEPTION(this->get_x_map().is_null(), std::logic_error,
+        "get_x_map() must return a nonnull map when setup is called!");
+
+    {
+      auto p = Teuchos::rcpFromRef(plist->sublist("InOut Arg Settings"));
+      this->setup_in_out_args(p, this->get_x_map(), this->get_f_map());
+    }
+
+    {
+      auto p = Teuchos::rcpFromRef(plist->sublist("Linear Solver Settings"));
+      this->setup_linear_solver(p);
+    }
   }
 
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   void ModelEvaluator<Scalar,LocalOrdinal,GlobalOrdinal,Node>::
-  set_x_f_maps(const Teuchos::RCP<const Map>& x_map,
-               const Teuchos::RCP<const Map>& f_map) {
+  setup_in_out_args(Teuchos::RCP<Teuchos::ParameterList>& plist,
+                    const Teuchos::RCP<const Map>& x_map,
+                    const Teuchos::RCP<const Map>& f_map) {
     TEUCHOS_ASSERT(nonnull(x_map));
 
     typedef ::Thyra::ModelEvaluatorBase MEB;
     typedef Teuchos::ScalarTraits<SC> ST;
 
     // Vector spaces
+    TEUCHOS_ASSERT(!x_map.is_null());
     x_space_ = ::Thyra::createVectorSpace<SC,LO,GO,NO>(x_map);
     if (f_map.is_null())
       f_space_ = x_space_;
@@ -59,6 +69,10 @@ namespace ForTrilinos {
     MEB::InArgsSetup<SC> in_args;
     in_args.setModelEvalDescription(this->description());
     in_args.setSupports(MEB::IN_ARG_x);
+    if (plist->isParameter("Np")) {
+      in_args.set_Np(plist->get<int>("Np"));
+    }
+
     // TODO: Can call in_args.set_Np based on value in parameter list?
     prototype_in_args_ = in_args;
 
@@ -67,7 +81,9 @@ namespace ForTrilinos {
     out_args.setSupports(MEB::OUT_ARG_f);
     out_args.setSupports(MEB::OUT_ARG_W_op);
     out_args.setSupports(MEB::OUT_ARG_W_prec);
-    // TODO: Can call out_args.set_Np_Ng based on value in parameter list?
+    if (plist->isParameter("Np")) {
+      out_args.set_Np_Ng(plist->get<int>("Np"), 0);
+    }
     prototype_out_args_ = out_args;
 
     nominal_values_ = in_args;
@@ -80,9 +96,7 @@ namespace ForTrilinos {
   {
     Stratimikos::DefaultLinearSolverBuilder builder;
 
-    auto p = Teuchos::rcpFromRef(plist->sublist("Linear Solver Settings"));
-
-    std::string prec = p->get("Preconditioner Type", "None");
+    std::string prec = plist->get("Preconditioner Type", "None");
     if (prec == "None") {
       // Do nothing
     } else if (prec == "Ifpack2") {
@@ -93,7 +107,7 @@ namespace ForTrilinos {
       TEUCHOS_TEST_FOR_EXCEPTION(true, std::invalid_argument,
         "Preconditioner Type must be one of 'None', 'Ifpack2'")
     }
-    builder.setParameterList(p);
+    builder.setParameterList(plist);
 
     lows_factory = builder.createLinearSolveStrategy("");
 
