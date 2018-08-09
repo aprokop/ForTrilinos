@@ -35,6 +35,8 @@ namespace ForTrilinos {
   };
 }
 
+#ifndef SWIG
 #include "nox_solver_def.hpp"
+#endif
 
 #endif

@@ -50,7 +50,7 @@ namespace ForTrilinos {
     }
 
     virtual void evaluate_preconditioner(const Teuchos::RCP<const MultiVector>& x,
-                                         Teuchos::RCP<Operator>& J) const
+                                         Teuchos::RCP<Operator>& M) const
     {
       TEUCHOS_TEST_FOR_EXCEPTION(true, std::invalid_argument,
         "evaluate_preconditioner must be implemented by derived classes");

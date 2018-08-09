@@ -14,7 +14,7 @@
 %include "model_evaluator.hpp"
 
 %teuchos_rcp(ForTrilinos::ModelEvaluator<SC,LO,GO,NO>)
-%template() ForTrilinos::ModelEvaluator<SC,LO,GO,NO>;
+%template(ForTrilinosModelEvaluator) ForTrilinos::ModelEvaluator<SC,LO,GO,NO>;
 
 // =======================================================================
 // Add the subclass
@@ -405,3 +405,26 @@ subroutine init_ForModelEvaluator(self)
   call swigc_ForModelEvaluator_init(self%swigdata, c_loc(handle))
 end subroutine
 %}
+
+%{
+#include "nox_solver.hpp"
+%}
+
+%include "nox_solver.hpp"
+
+%teuchos_rcp(ForTrilinos::NOXSolver<SC,LO,GO,NO>)
+%template(NOXSolver) ForTrilinos::NOXSolver<SC,LO,GO,NO>;
+
+// All enums should be prefaced with NOX
+%rename("NOX%s", %$isenumitem) "";
+%rename("NOX%s", %$isenum)     "";
+
+%{
+#include "NOX_StatusTest_Generic.H"
+%}
+
+%ignore NOX::Solver::Generic;
+%ignore NOX::StatusTest::Generic;
+%ignore NOX::StatusTest::operator<<;
+
+%include "NOX_StatusTest_Generic.H"
