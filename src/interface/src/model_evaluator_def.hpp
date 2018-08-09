@@ -6,6 +6,8 @@
  */
 #include "model_evaluator.hpp"
 
+#include "Teuchos_AbstractFactoryStd.hpp"
+
 // Thyra support
 #include "Thyra_DefaultSpmdVectorSpace.hpp"
 #include "Thyra_DefaultSerialDenseLinearOpWithSolveFactory.hpp"

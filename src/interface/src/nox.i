@@ -26,29 +26,33 @@ extern "C" {
 /* Fortran BIND(C) function */
 void swigd_ForModelEvaluator_setup(
         SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1,
-        SwigClassWrapper const *farg2
+        SwigClassWrapper const *farg1
         );
 void swigd_ForModelEvaluator_evaluate_residual(
         SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1
+        SwigClassWrapper const *farg1,
+        SwigClassWrapper const *farg2
         );
 void swigd_ForModelEvaluator_evaluate_jacobian(
         SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1
+        SwigClassWrapper const *farg1,
+        SwigClassWrapper const *farg2
         );
 void swigd_ForModelEvaluator_evaluate_preconditioner(
         SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1
+        SwigClassWrapper const *farg1,
+        SwigClassWrapper const *farg2
         );
-void swigd_ForModelEvaluator_update_x(
-        SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1
+SwigClassWrapper swigd_ForModelEvaluator_get_x_map(
+        SwigClassWrapper const *fself
         );
-}
+SwigClassWrapper swigd_ForModelEvaluator_get_f_map(
+        SwigClassWrapper const *fself
+        );
 SwigClassWrapper swigd_ForModelEvaluator_create_operator(
         SwigClassWrapper const *fself
         );
+}
 %}
 
 %fortranprepend ForModelEvaluator::~ForModelEvaluator() %{
@@ -79,8 +83,7 @@ SwigClassWrapper swigd_ForModelEvaluator_create_operator(
     typedef Tpetra::MultiVector<SC,LO,GO,NO> multivector_type;
     typedef Tpetra::Operator<SC,LO,GO,NO> operator_type;
 
-    void setup(const Teuchos::RCP<const map_type>& x_map,
-               const Teuchos::RCP<const map_type>& f_map) {
+    void setup(Teuchos::RCP<Teuchos::ParameterList>& plist) {
       /* construct "this" pointer */
       Teuchos::RCP<ForModelEvaluator> tempthis(
              const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
@@ -90,17 +93,14 @@ SwigClassWrapper swigd_ForModelEvaluator_create_operator(
 
       /* convert X -> class wrapper */
       SwigClassWrapper farg1;
-      farg1.ptr = const_cast<Teuchos::RCP<const map_type>*>(&x_map);
+      farg1.ptr = &plist;
       farg1.mem = SWIG_CREF; // x_map is mutable
 
-      SwigClassWrapper farg2;
-      farg2.ptr = const_cast<Teuchos::RCP<const map_type>*>(&f_map);
-      farg2.mem = SWIG_CREF; // x_map is mutable
-
-      swigd_ForModelEvaluator_setup(&self, &farg1, &farg2);
+      swigd_ForModelEvaluator_setup(&self, &farg1);
     }
 
-    virtual void evaluate_residual(Teuchos::RCP<multivector_type>& f) const override {
+    virtual void evaluate_residual(const Teuchos::RCP<const multivector_type>& x,
+                                   Teuchos::RCP<multivector_type>& f) const override {
       /* construct "this" pointer */
       Teuchos::RCP<ForModelEvaluator> tempthis(
              const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
@@ -108,60 +108,89 @@ SwigClassWrapper swigd_ForModelEvaluator_create_operator(
       self.ptr = &tempthis;
       self.mem = SWIG_CREF; // since this function is const
 
-      /* convert X -> class wrapper */
-      SwigClassWrapper farg1;
-      farg1.ptr = &f;
-      farg1.mem = SWIG_REF; // f is mutable
-
-      swigd_ForModelEvaluator_evaluate_residual(&self, &farg1);
-    }
-
-    virtual void evaluate_jacobian(Teuchos::RCP<operator_type>& J) const override {
-      /* construct "this" pointer */
-      Teuchos::RCP<ForModelEvaluator> tempthis(
-             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
-      SwigClassWrapper self;
-      self.ptr = &tempthis;
-      self.mem = SWIG_CREF; // since this function is const
-
-      /* convert X -> class wrapper */
-      SwigClassWrapper farg1;
-      farg1.ptr = &J;
-      farg1.mem = SWIG_REF; // f is mutable
-
-      swigd_ForModelEvaluator_evaluate_jacobian(&self, &farg1);
-    }
-
-    virtual void evaluate_preconditioner(Teuchos::RCP<operator_type>& M) const override {
-      /* construct "this" pointer */
-      Teuchos::RCP<ForModelEvaluator> tempthis(
-             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
-      SwigClassWrapper self;
-      self.ptr = &tempthis;
-      self.mem = SWIG_CREF; // since this function is const
-
-      /* convert X -> class wrapper */
-      SwigClassWrapper farg1;
-      farg1.ptr = &M;
-      farg1.mem = SWIG_REF; // f is mutable
-
-      swigd_ForModelEvaluator_evaluate_preconditioner(&self, &farg1);
-    }
-
-    virtual void update_x(const Teuchos::RCP<const multivector_type>& x) const override {
-      /* construct "this" pointer */
-      Teuchos::RCP<ForModelEvaluator> tempthis(
-             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
-      SwigClassWrapper self;
-      self.ptr = &tempthis;
-      self.mem = SWIG_CREF; // since this function is const
-
-      /* convert X -> class wrapper */
+      /* convert x -> class wrapper */
       SwigClassWrapper farg1;
       farg1.ptr = const_cast<Teuchos::RCP<const multivector_type>*>(&x);
       farg1.mem = SWIG_CREF; // x is const
 
-      swigd_ForModelEvaluator_evaluate_preconditioner(&self, &farg1);
+      /* convert f -> class wrapper */
+      SwigClassWrapper farg2;
+      farg2.ptr = &f;
+      farg2.mem = SWIG_REF; // f is mutable
+
+      swigd_ForModelEvaluator_evaluate_residual(&self, &farg1, &farg2);
+    }
+
+    virtual void evaluate_jacobian(const Teuchos::RCP<const multivector_type>& x,
+                                   Teuchos::RCP<operator_type>& J) const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      /* convert x -> class wrapper */
+      SwigClassWrapper farg1;
+      farg1.ptr = const_cast<Teuchos::RCP<const multivector_type>*>(&x);
+      farg1.mem = SWIG_CREF; // x is const
+
+      /* convert J -> class wrapper */
+      SwigClassWrapper farg2;
+      farg2.ptr = &J;
+      farg2.mem = SWIG_REF; // f is mutable
+
+      swigd_ForModelEvaluator_evaluate_jacobian(&self, &farg1, &farg2);
+    }
+
+    virtual void evaluate_preconditioner(const Teuchos::RCP<const multivector_type>& x,
+                                         Teuchos::RCP<operator_type>& M) const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      /* convert x -> class wrapper */
+      SwigClassWrapper farg1;
+      farg1.ptr = const_cast<Teuchos::RCP<const multivector_type>*>(&x);
+      farg1.mem = SWIG_CREF; // x is const
+
+      /* convert M -> class wrapper */
+      SwigClassWrapper farg2;
+      farg2.ptr = &M;
+      farg2.mem = SWIG_REF; // f is mutable
+
+      swigd_ForModelEvaluator_evaluate_preconditioner(&self, &farg1, &farg2);
+    }
+
+    virtual Teuchos::RCP<const map_type> get_x_map() const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      SwigClassWrapper fresult = swigd_ForModelEvaluator_get_x_map(&self);
+
+      Teuchos::RCP<const map_type>* smartresult = static_cast< Teuchos::RCP<const map_type>* >(fresult.ptr);
+      return *smartresult;
+    }
+
+    virtual Teuchos::RCP<const map_type> get_f_map() const override {
+      /* construct "this" pointer */
+      Teuchos::RCP<ForModelEvaluator> tempthis(
+             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
+      SwigClassWrapper self;
+      self.ptr = &tempthis;
+      self.mem = SWIG_CREF; // since this function is const
+
+      SwigClassWrapper fresult = swigd_ForModelEvaluator_get_f_map(&self);
+
+      Teuchos::RCP<const map_type>* smartresult = static_cast< Teuchos::RCP<const map_type>* >(fresult.ptr);
+      return *smartresult;
     }
 
     virtual Teuchos::RCP<operator_type> create_operator() const override {
@@ -211,8 +240,30 @@ subroutine c_f_pointer_ForModelEvaluator(clswrap, fptr)
   if (.not. associated(fptr)) stop 2
 end subroutine
 
-subroutine swigd_ForModelEvaluator_setup(fself, farg1, farg2) &
+subroutine swigd_ForModelEvaluator_setup(fself, farg1) &
     bind(C, name="swigd_ForModelEvaluator_setup")
+  use, intrinsic :: ISO_C_BINDING
+  implicit none
+  type(SwigClassWrapper), intent(in) :: fself
+  type(SwigClassWrapper), intent(inout) :: farg1
+
+  class(ForModelEvaluator), pointer :: self
+  type(ParameterList) :: plist
+
+  ! Get pointer to Fortran object from class wrapper
+  call c_f_pointer_ForModelEvaluator(fself, self)
+  if (.not. associated(self)) stop 3
+
+  ! Convert class references to fortran proxy references
+  plist%swigdata = farg1
+
+  ! Call fortran function pointer with native fortran input/output
+  call self%setup(plist)
+end subroutine
+
+! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"
+subroutine swigd_ForModelEvaluator_evaluate_residual(fself, farg1, farg2) &
+    bind(C, name="swigd_ForModelEvaluator_evaluate_residual")
   use, intrinsic :: ISO_C_BINDING
   implicit none
   type(SwigClassWrapper), intent(in) :: fself
@@ -220,30 +271,7 @@ subroutine swigd_ForModelEvaluator_setup(fself, farg1, farg2) &
   type(SwigClassWrapper), intent(inout) :: farg2
 
   class(ForModelEvaluator), pointer :: self
-  type(TpetraMap) :: x_map
-  type(TpetraMap) :: f_map
-
-  ! Get pointer to Fortran object from class wrapper
-  call c_f_pointer_ForModelEvaluator(fself, self)
-  if (.not. associated(self)) stop 3
-
-  ! Convert class references to fortran proxy references
-  x_map%swigdata = farg1
-  f_map%swigdata = farg2
-
-  ! Call fortran function pointer with native fortran input/output
-  call self%setup(x_map, f_map)
-end subroutine
-
-! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"
-subroutine swigd_ForModelEvaluator_evaluate_residual(fself, farg1) &
-    bind(C, name="swigd_ForModelEvaluator_evaluate_residual")
-  use, intrinsic :: ISO_C_BINDING
-  implicit none
-  type(SwigClassWrapper), intent(in) :: fself
-  type(SwigClassWrapper), intent(inout) :: farg1
-
-  class(ForModelEvaluator), pointer :: self
+  type(TpetraMultiVector) :: x
   type(TpetraMultiVector) :: f
 
   ! Get pointer to Fortran object from class wrapper
@@ -251,21 +279,24 @@ subroutine swigd_ForModelEvaluator_evaluate_residual(fself, farg1) &
   if (.not. associated(self)) stop 3
 
   ! Convert class references to fortran proxy references
-  f%swigdata = farg1
+  x%swigdata = farg1
+  f%swigdata = farg2
 
   ! Call fortran function pointer with native fortran input/output
-  call self%evaluate_residual(f)
+  call self%evaluate_residual(x, f)
 end subroutine
 
 ! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"
-subroutine swigd_ForModelEvaluator_evaluate_jacobian(fself, farg1) &
+subroutine swigd_ForModelEvaluator_evaluate_jacobian(fself, farg1, farg2) &
     bind(C, name="swigd_ForModelEvaluator_evaluate_jacobian")
   use, intrinsic :: ISO_C_BINDING
   implicit none
   type(SwigClassWrapper), intent(in) :: fself
   type(SwigClassWrapper), intent(in) :: farg1
+  type(SwigClassWrapper), intent(in) :: farg2
 
   class(ForModelEvaluator), pointer :: self
+  type(TpetraMultiVector) :: x
   type(ForTpetraOperator) :: J
 
   ! Get pointer to Fortran object from class wrapper
@@ -273,21 +304,24 @@ subroutine swigd_ForModelEvaluator_evaluate_jacobian(fself, farg1) &
   if (.not. associated(self)) stop 3
 
   ! Convert class references to fortran proxy references
-  J%swigdata = farg1
+  x%swigdata = farg1
+  J%swigdata = farg2
 
   ! Call fortran function pointer with native fortran input/output
-  call self%evaluate_jacobian(J)
+  call self%evaluate_jacobian(x, J)
 end subroutine
 
 ! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"
-subroutine swigd_ForModelEvaluator_evaluate_preconditioner(fself, farg1) &
+subroutine swigd_ForModelEvaluator_evaluate_preconditioner(fself, farg1, farg2) &
     bind(C, name="swigd_ForModelEvaluator_evaluate_preconditioner")
   use, intrinsic :: ISO_C_BINDING
   implicit none
   type(SwigClassWrapper), intent(in) :: fself
   type(SwigClassWrapper), intent(in) :: farg1
+  type(SwigClassWrapper), intent(in) :: farg2
 
   class(ForModelEvaluator), pointer :: self
+  type(TpetraMultiVector) :: x
   type(ForTpetraOperator) :: M
 
   ! Get pointer to Fortran object from class wrapper
@@ -295,33 +329,52 @@ subroutine swigd_ForModelEvaluator_evaluate_preconditioner(fself, farg1) &
   if (.not. associated(self)) stop 3
 
   ! Convert class references to fortran proxy references
-  M%swigdata = farg1
+  x%swigdata = farg1
+  M%swigdata = farg2
 
   ! Call fortran function pointer with native fortran input/output
-  call self%evaluate_preconditioner(M)
+  call self%evaluate_preconditioner(x, M)
 end subroutine
 
-! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"
-subroutine swigd_ForModelEvaluator_update_x(fself, farg1) &
-    bind(C, name="swigd_ForModelEvaluator_update_x")
+function swigd_ForModelEvaluator_get_x_map(fself) &
+    bind(C, name="swigd_ForModelEvaluator_get_x_map") &
+    result(fresult)
   use, intrinsic :: ISO_C_BINDING
   implicit none
   type(SwigClassWrapper), intent(in) :: fself
-  type(SwigClassWrapper), intent(in) :: farg1
+  type(SwigClassWrapper) :: fresult
 
   class(ForModelEvaluator), pointer :: self
-  type(TpetraMultiVector) :: x
+  type(TpetraMap) :: result
 
-  ! Get pointer to Fortran object from class wrapper
+  ! Get pointer to Fortran object from class Handle
   call c_f_pointer_ForModelEvaluator(fself, self)
   if (.not. associated(self)) stop 3
 
-  ! Convert class references to fortran proxy references
-  x%swigdata = farg1
+  result = self%get_x_map()
 
-  ! Call fortran function pointer with native fortran input/output
-  call self%update_x(x)
-end subroutine
+  fresult = result%swigdata
+end function
+
+function swigd_ForModelEvaluator_get_f_map(fself) &
+    bind(C, name="swigd_ForModelEvaluator_get_f_map") &
+    result(fresult)
+  use, intrinsic :: ISO_C_BINDING
+  implicit none
+  type(SwigClassWrapper), intent(in) :: fself
+  type(SwigClassWrapper) :: fresult
+
+  class(ForModelEvaluator), pointer :: self
+  type(TpetraMap) :: result
+
+  ! Get pointer to Fortran object from class Handle
+  call c_f_pointer_ForModelEvaluator(fself, self)
+  if (.not. associated(self)) stop 3
+
+  result = self%get_f_map()
+
+  fresult = result%swigdata
+end function
 
 function swigd_ForModelEvaluator_create_operator(fself) &
     bind(C, name="swigd_ForModelEvaluator_create_operator") &
