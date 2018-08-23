@@ -63,9 +63,14 @@ TRIBITS_ADD_EXECUTABLE_AND_TEST(
   COMM serial mpi
   )
 
-# TRIBITS_ADD_EXECUTABLE_AND_TEST(
-  # test_nox_fotran
-  # SOURCES test_nox.f90
-  # LINKER_LANGUAGE Fortran
-  # COMM serial mpi
-  # )
+TRIBITS_ADD_EXECUTABLE_AND_TEST(
+  test_nox_fortran
+  SOURCES Tpetra_ModelEvaluator_1DFEM.f90 test_nox.f90
+  LINKER_LANGUAGE Fortran
+  COMM serial mpi
+  )
+
+#TARGET_LINK_LIBRARIES(test_nox_fortran Tpetra_ModelEvaluator_module)
+#TARGET_INCLUDE_DIRECTORIES(test_nox_fortran PUBLIC
+#  $<TARGET_PROPERTY:Tpetra_ModelEvaluator_module,${CMAKE_BINARY_DIR}>
+#)
