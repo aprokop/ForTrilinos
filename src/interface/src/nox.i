@@ -24,10 +24,6 @@
 %insert("header") %{
 extern "C" {
 /* Fortran BIND(C) function */
-void swigd_ForModelEvaluator_setup(
-        SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1
-        );
 void swigd_ForModelEvaluator_evaluate_residual(
         SwigClassWrapper const *fself,
         SwigClassWrapper const *farg1,
@@ -84,19 +80,7 @@ SwigClassWrapper swigd_ForModelEvaluator_create_operator(
     typedef Tpetra::Operator<SC,LO,GO,NO> operator_type;
 
     void setup(Teuchos::RCP<Teuchos::ParameterList>& plist) {
-      /* construct "this" pointer */
-      Teuchos::RCP<ForModelEvaluator> tempthis(
-             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
-      SwigClassWrapper self;
-      self.ptr = &tempthis;
-      self.mem = SWIG_CREF; // since this function is const
-
-      /* convert X -> class wrapper */
-      SwigClassWrapper farg1;
-      farg1.ptr = &plist;
-      farg1.mem = SWIG_CREF; // x_map is mutable
-
-      swigd_ForModelEvaluator_setup(&self, &farg1);
+      ForTrilinos::ModelEvaluator<SC,LO,GO,NO>::setup(plist);
     }
 
     virtual void evaluate_residual(const Teuchos::RCP<const multivector_type>& x,
@@ -238,27 +222,6 @@ subroutine c_f_pointer_ForModelEvaluator(clswrap, fptr)
   ! Access the pointer inside that
   fptr => handle%data
   if (.not. associated(fptr)) stop 2
-end subroutine
-
-subroutine swigd_ForModelEvaluator_setup(fself, farg1) &
-    bind(C, name="swigd_ForModelEvaluator_setup")
-  use, intrinsic :: ISO_C_BINDING
-  implicit none
-  type(SwigClassWrapper), intent(in) :: fself
-  type(SwigClassWrapper), intent(inout) :: farg1
-
-  class(ForModelEvaluator), pointer :: self
-  type(ParameterList) :: plist
-
-  ! Get pointer to Fortran object from class wrapper
-  call c_f_pointer_ForModelEvaluator(fself, self)
-  if (.not. associated(self)) stop 3
-
-  ! Convert class references to fortran proxy references
-  plist%swigdata = farg1
-
-  ! Call fortran function pointer with native fortran input/output
-  call self%setup(plist)
 end subroutine
 
 ! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"

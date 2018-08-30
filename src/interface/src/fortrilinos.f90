@@ -1096,43 +1096,16 @@ subroutine c_f_pointer_ForModelEvaluator(clswrap, fptr)
   type(ForModelEvaluatorHandle), pointer :: handle
   type(C_PTR) :: fself_ptr
   ! Convert C handle to fortran pointer
-  print*, 'TJF_DBG: HERE I AM Z.0'
   fself_ptr = swigc_ForModelEvaluator_fhandle(clswrap)
-  print*, 'TJF_DBG: HERE I AM Z.1'
   ! *** NOTE *** : gfortran 5 through 7 falsely claim the next line is not standards compliant. Since 'handle' is a scalar and
   ! not an array it should be OK, but TS29113 explicitly removes the interoperability requirement for fptr.
   ! Error: TS 29113/TS 18508: Noninteroperable array FPTR at (1) to C_F_POINTER: Expression is a noninteroperable derived type
   ! see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=84924
   call c_f_pointer(cptr=fself_ptr, fptr=handle)
-  print*, 'TJF_DBG: HERE I AM Z.2'
   if (.not. associated(handle)) stop 1
   ! Access the pointer inside that
   fptr => handle%data
   if (.not. associated(fptr)) stop 2
-end subroutine
-
-subroutine swigd_ForModelEvaluator_setup(fself, farg1) &
-    bind(C, name="swigd_ForModelEvaluator_setup")
-  use, intrinsic :: ISO_C_BINDING
-  implicit none
-  type(SwigClassWrapper), intent(in) :: fself
-  type(SwigClassWrapper), intent(inout) :: farg1
-
-  class(ForModelEvaluator), pointer :: self
-  type(ParameterList) :: plist
-
-  ! Get pointer to Fortran object from class wrapper
-  print*, 'TJF_DBG: HERE I AM Y.0'
-  call c_f_pointer_ForModelEvaluator(fself, self)
-  print*, 'TJF_DBG: HERE I AM Y.1'
-  if (.not. associated(self)) stop 3
-
-  ! Convert class references to fortran proxy references
-  plist%swigdata = farg1
-
-  ! Call fortran function pointer with native fortran input/output
-  call self%setup(plist)
-  print*, 'TJF_DBG: HERE I AM Y.2'
 end subroutine
 
 ! This function must have input/output arguments compatible with ISO C, and it must be marked with "bind(C)"

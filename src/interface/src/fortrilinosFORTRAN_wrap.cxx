@@ -563,10 +563,6 @@ SWIGINTERN SwigArrayWrapper SwigArrayWrapper_uninitialized() {
 
 extern "C" {
 /* Fortran BIND(C) function */
-void swigd_ForModelEvaluator_setup(
-        SwigClassWrapper const *fself,
-        SwigClassWrapper const *farg1
-        );
 void swigd_ForModelEvaluator_evaluate_residual(
         SwigClassWrapper const *fself,
         SwigClassWrapper const *farg1,
@@ -610,19 +606,7 @@ SwigClassWrapper swigd_ForModelEvaluator_create_operator(
     typedef Tpetra::Operator<SC,LO,GO,NO> operator_type;
 
     void setup(Teuchos::RCP<Teuchos::ParameterList>& plist) {
-      /* construct "this" pointer */
-      Teuchos::RCP<ForModelEvaluator> tempthis(
-             const_cast<ForModelEvaluator*>(this) SWIG_NO_NULL_DELETER_0);
-      SwigClassWrapper self;
-      self.ptr = &tempthis;
-      self.mem = SWIG_CREF; // since this function is const
-
-      /* convert X -> class wrapper */
-      SwigClassWrapper farg1;
-      farg1.ptr = &plist;
-      farg1.mem = SWIG_CREF; // x_map is mutable
-
-      swigd_ForModelEvaluator_setup(&self, &farg1);
+      ForTrilinos::ModelEvaluator<SC,LO,GO,NO>::setup(plist);
     }
 
     virtual void evaluate_residual(const Teuchos::RCP<const multivector_type>& x,

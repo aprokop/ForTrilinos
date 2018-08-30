@@ -57,7 +57,7 @@ contains
     integer :: ierr
     type(TeuchosComm) :: comm
     type(ParameterList) :: params
-    type(TpetraModelEvaluator1DFEM) :: evaluator
+    class(ForModelEvaluator), allocatable :: evaluator
     type(NOXSolver) :: nox_solver
     integer(global_size_type) :: num_global_elems
     real(scalar_type) :: z_min, z_max
@@ -71,19 +71,24 @@ contains
     z_min = 0.0
     z_max = 1.0
     print*, 'TJF_DBG: HERE I AM X.0'
-    evaluator = TpetraModelEvaluator1DFEM(comm, num_global_elems, z_min, z_max)
+    allocate(evaluator, source=TpetraModelEvaluator1DFEM(comm, num_global_elems, z_min, z_max))
+
+    call init_ForModelEvaluator(evaluator); FORTRILINOS_CHECK_IERR()
     print*, 'TJF_DBG: HERE I AM X.1'
-    call evaluator%setup(params)
+    call evaluator%setup(params); FORTRILINOS_CHECK_IERR()
     print*, 'TJF_DBG: HERE I AM X.2'
 
     nox_solver = NOXSolver(evaluator)
     print*, 'TJF_DBG: HERE I AM X.3'
-    call nox_solver%setup(params)
+    call nox_solver%setup(params); FORTRILINOS_CHECK_IERR()
     print*, 'TJF_DBG: HERE I AM X.4'
-    status = nox_solver%solve();
+    status = nox_solver%solve(); FORTRILINOS_CHECK_IERR()
     print*, 'TJF_DBG: HERE I AM X.5'
 
     if (status /= 0) ierr = 1
+
+    call evaluator%release(); FORTRILINOS_CHECK_IERR()
+    deallocate(evaluator)
 
   end subroutine main2
 
