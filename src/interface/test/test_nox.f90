@@ -70,20 +70,14 @@ contains
     num_global_elems = 100
     z_min = 0.0
     z_max = 1.0
-    print*, 'TJF_DBG: HERE I AM X.0'
     allocate(evaluator, source=TpetraModelEvaluator1DFEM(comm, num_global_elems, z_min, z_max))
 
     call init_ForModelEvaluator(evaluator); FORTRILINOS_CHECK_IERR()
-    print*, 'TJF_DBG: HERE I AM X.1'
     call evaluator%setup(params); FORTRILINOS_CHECK_IERR()
-    print*, 'TJF_DBG: HERE I AM X.2'
 
     nox_solver = NOXSolver(evaluator)
-    print*, 'TJF_DBG: HERE I AM X.3'
     call nox_solver%setup(params); FORTRILINOS_CHECK_IERR()
-    print*, 'TJF_DBG: HERE I AM X.4'
     status = nox_solver%solve(); FORTRILINOS_CHECK_IERR()
-    print*, 'TJF_DBG: HERE I AM X.5'
 
     if (status /= 0) ierr = 1
 

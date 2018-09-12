@@ -1000,6 +1000,12 @@ namespace ForTrilinos {
     TEUCHOS_TEST_FOR_EXCEPTION(A.is_null(), std::runtime_error, "operator_to_matrix: the provided operator is not a Tpetra CrsMatrix");
     return A;
   }
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal, Node> >
+  matrix_to_operator(Teuchos::RCP<Tpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> > A) {
+    auto op = Teuchos::rcp_dynamic_cast<Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal, Node> >(A);
+    return op;
+  }
 }
 
 
@@ -13370,6 +13376,41 @@ SWIGEXPORT SwigClassWrapper _wrap_operator_to_matrix(SwigClassWrapper const *far
     }
   }
   fresult.ptr = (new Teuchos::RCP< Tpetra::CrsMatrix<SC,LO,GO,NO> >(static_cast< const Teuchos::RCP< Tpetra::CrsMatrix<SC,LO,GO,NO> >& >(result)));
+  fresult.mem = SWIG_MOVE;
+  return fresult;
+}
+
+
+SWIGEXPORT SwigClassWrapper _wrap_matrix_to_operator(SwigClassWrapper const *farg1) {
+  SwigClassWrapper fresult ;
+  Teuchos::RCP< Tpetra::CrsMatrix< SC,LO,GO,NO,false > > arg1 ;
+  Teuchos::RCP< Tpetra::Operator< SC,LO,GO,NO > > result;
+
+  if (farg1->ptr) arg1 = *static_cast< Teuchos::RCP< Tpetra::CrsMatrix<SC,LO,GO,NO> >* >(farg1->ptr);
+  {
+    // Make sure no unhandled exceptions exist before performing a new action
+    SWIG_check_unhandled_exception_impl("ForTrilinos::matrix_to_operator< SC,LO,GO,NO >(Teuchos::RCP< Tpetra::CrsMatrix< SC,LO,GO,NO,false > >)");;
+    try
+    {
+      // Attempt the wrapped function call
+      result = ForTrilinos::SWIGTEMPLATEDISAMBIGUATOR matrix_to_operator< SC,LO,GO,NO >(arg1);
+    }
+    catch (const std::range_error& e)
+    {
+      // Store a C++ exception
+      SWIG_exception_impl("ForTrilinos::matrix_to_operator< SC,LO,GO,NO >(Teuchos::RCP< Tpetra::CrsMatrix< SC,LO,GO,NO,false > >)", SWIG_IndexError, e.what(), return SwigClassWrapper_uninitialized());
+    }
+    catch (const std::exception& e)
+    {
+      // Store a C++ exception
+      SWIG_exception_impl("ForTrilinos::matrix_to_operator< SC,LO,GO,NO >(Teuchos::RCP< Tpetra::CrsMatrix< SC,LO,GO,NO,false > >)", SWIG_RuntimeError, e.what(), return SwigClassWrapper_uninitialized());
+    }
+    catch (...)
+    {
+      SWIG_exception_impl("ForTrilinos::matrix_to_operator< SC,LO,GO,NO >(Teuchos::RCP< Tpetra::CrsMatrix< SC,LO,GO,NO,false > >)", SWIG_UnknownError, "An unknown exception occurred", return SwigClassWrapper_uninitialized());
+    }
+  }
+  fresult.ptr = (new Teuchos::RCP< Tpetra::Operator<SC,LO,GO,NO> >(static_cast< const Teuchos::RCP< Tpetra::Operator<SC,LO,GO,NO> >& >(result)));
   fresult.mem = SWIG_MOVE;
   return fresult;
 }

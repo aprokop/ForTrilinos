@@ -262,6 +262,13 @@ namespace ForTrilinos {
     TEUCHOS_TEST_FOR_EXCEPTION(A.is_null(), std::runtime_error, "operator_to_matrix: the provided operator is not a Tpetra CrsMatrix");
     return A;
   }
+  template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
+  Teuchos::RCP<Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal, Node> >
+  matrix_to_operator(Teuchos::RCP<Tpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> > A) {
+    auto op = Teuchos::rcp_dynamic_cast<Tpetra::Operator<Scalar, LocalOrdinal, GlobalOrdinal, Node> >(A);
+    return op;
+  }
 }
 %}
 %template(operator_to_matrix) ForTrilinos::operator_to_matrix<SC,LO,GO,NO>;
+%template(matrix_to_operator) ForTrilinos::matrix_to_operator<SC,LO,GO,NO>;

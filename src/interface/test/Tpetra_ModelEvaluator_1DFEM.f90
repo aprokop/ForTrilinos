@@ -23,6 +23,7 @@ module TpetraModelEvaluator1DFEM_module
   type, extends(ForModelEvaluator) :: TpetraModelEvaluator1DFEM
     type(TeuchosComm), private :: comm
     type(TpetraMap), private :: x_owned_map, x_ghosted_map, f_owned_map
+    type(TpetraCrsGraph), private :: graph
     type(TpetraImport), private :: importer
     type(TpetraMultiVector), private :: node_coords
     type(TpetraMultiVector), private, allocatable :: x
@@ -35,6 +36,9 @@ module TpetraModelEvaluator1DFEM_module
     procedure :: evaluate_jacobian => TpetraModelEvaluator1DFEM_eval_jac
     procedure :: evaluate_preconditioner => TpetraModelEvaluator1DFEM_eval_prec
     procedure :: update_solution_vector => TpetraModelEvaluator1DFEM_update_solution_vector
+    procedure :: get_x_map => TpetraModelEvaluator1DFEM_get_x_map
+    procedure :: get_f_map => TpetraModelEvaluator1DFEM_get_f_map
+    procedure :: create_operator => TpetraModelEvaluator1DFEM_create_operator
   end type
 
   interface TpetraModelEvaluator1DFEM
@@ -175,7 +179,7 @@ contains
     self%f_owned_map = self%x_owned_map
 
     ! Initialize the graph for W CrsMatrix object
-    graph = self%create_graph(self%x_owned_map, self%x_ghosted_map)
+    self%graph = self%create_graph(self%x_owned_map, self%x_ghosted_map)
 
     ! Create the nodal coordinates
     self%node_coords = &
@@ -540,5 +544,34 @@ contains
   end subroutine TpetraModelEvaluator1DFEM_eval_prec
 
   ! -------------------------------------------------------------------------- !
+
+  function TpetraModelEvaluator1DFEM_get_x_map(self) result(map)
+    class(TpetraModelEvaluator1DFEM), intent(in) :: self
+    type(TpetraMap) :: map
+
+    map = self%x_owned_map
+  end function TpetraModelEvaluator1DFEM_get_x_map
+
+  ! -------------------------------------------------------------------------- !
+
+  function TpetraModelEvaluator1DFEM_get_f_map(self) result(map)
+    class(TpetraModelEvaluator1DFEM), intent(in) :: self
+    type(TpetraMap) :: map
+
+    map = self%x_owned_map
+  end function TpetraModelEvaluator1DFEM_get_f_map
+
+  ! -------------------------------------------------------------------------- !
+
+  function TpetraModelEvaluator1DFEM_create_operator(self) result(op)
+    class(TpetraModelEvaluator1DFEM), intent(in) :: self
+    type(TpetraCrsMatrix) :: matrix
+    type(TpetraOperator) :: op
+
+    matrix = TpetraCrsMatrix(self%graph)
+
+    op = matrix_to_operator(matrix)
+
+  end function TpetraModelEvaluator1DFEM_create_operator
 
 end module TpetraModelEvaluator1DFEM_module

@@ -93,6 +93,7 @@ public :: init_ForTpetraOperator
  public :: TpetraCrsGraph
  public :: TpetraCrsMatrix
  public :: operator_to_matrix
+ public :: matrix_to_operator
  public :: TpetraReader
  public :: TpetraWriter
  public :: TpetraMatrixMatrixAdd
@@ -3816,6 +3817,15 @@ end subroutine
   end subroutine
 function swigc_operator_to_matrix(farg1) &
 bind(C, name="_wrap_operator_to_matrix") &
+result(fresult)
+use, intrinsic :: ISO_C_BINDING
+import :: SwigClassWrapper
+type(SwigClassWrapper) :: farg1
+type(SwigClassWrapper) :: fresult
+end function
+
+function swigc_matrix_to_operator(farg1) &
+bind(C, name="_wrap_matrix_to_operator") &
 result(fresult)
 use, intrinsic :: ISO_C_BINDING
 import :: SwigClassWrapper
@@ -9779,6 +9789,19 @@ type(SwigClassWrapper) :: farg1
 
 farg1 = op%swigdata
 fresult = swigc_operator_to_matrix(farg1)
+swig_result%swigdata = fresult
+end function
+
+function matrix_to_operator(a) &
+result(swig_result)
+use, intrinsic :: ISO_C_BINDING
+type(TpetraOperator) :: swig_result
+class(TpetraCrsMatrix), intent(inout) :: a
+type(SwigClassWrapper) :: fresult
+type(SwigClassWrapper) :: farg1
+
+farg1 = a%swigdata
+fresult = swigc_matrix_to_operator(farg1)
 swig_result%swigdata = fresult
 end function
 
