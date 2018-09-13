@@ -37,6 +37,9 @@ program main
   call load_from_xml(params, 'nox_params.xml')
   call main2(comm, params, ierr)
 
+  call params%release(); FORTRILINOS_CHECK_IERR()
+  call comm%release(); FORTRILINOS_CHECK_IERR()
+
   if (ierr /= 0) then
     write(*,*) "TEST FAILED!"
     stop 1
@@ -83,6 +86,9 @@ contains
 
     call evaluator%release(); FORTRILINOS_CHECK_IERR()
     deallocate(evaluator)
+
+    call params%release(); FORTRILINOS_CHECK_IERR()
+    call nox_solver%release(); FORTRILINOS_CHECK_IERR()
 
   end subroutine main2
 

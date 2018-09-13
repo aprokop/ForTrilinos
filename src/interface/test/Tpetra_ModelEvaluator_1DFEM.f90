@@ -39,6 +39,7 @@ module TpetraModelEvaluator1DFEM_module
     procedure :: get_x_map => TpetraModelEvaluator1DFEM_get_x_map
     procedure :: get_f_map => TpetraModelEvaluator1DFEM_get_f_map
     procedure :: create_operator => TpetraModelEvaluator1DFEM_create_operator
+    procedure :: release => delete_TpetraModelEvaluator1DFEM
   end type
 
   interface TpetraModelEvaluator1DFEM
@@ -574,5 +575,26 @@ contains
     op = matrix_to_operator(matrix)
 
   end function TpetraModelEvaluator1DFEM_create_operator
+
+  ! -------------------------------------------------------------------------- !
+
+  subroutine delete_TpetraModelEvaluator1DFEM(self)
+    class(TpetraModelEvaluator1DFEM), intent(inout) :: self
+
+    call self%comm%release()
+    call self%x_owned_map%release()
+    call self%x_ghosted_map%release()
+    call self%f_owned_map%release()
+    call self%graph%release()
+    call self%importer%release()
+    call self%node_coords%release()
+    call self%x%release()
+    deallocate(self%x)
+    call self%J_diagonal%release()
+    deallocate(self%J_diagonal)
+
+    ! Need to downcast and call base%release()
+    ! call self%release()
+  end subroutine
 
 end module TpetraModelEvaluator1DFEM_module
