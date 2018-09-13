@@ -48,7 +48,7 @@ module TpetraModelEvaluator1DFEM_module
   ! Linear FE basis
   type :: Linear2NodeFEBasis
     real(scalar_type) :: phi(2), dphide(2)
-    real(scalar_type) :: uu, zz, duu, eta, wt
+    real(scalar_type) :: uu, zz, duu, wt
     real(scalar_type) :: dz
     ! These are only needed for transient
     real(scalar_type) :: uuold, duuold;
@@ -72,7 +72,6 @@ contains
     self%uu = 0
     self%zz = 0
     self%duu = 0
-    self%eta = 0
     self%wt = 0
     self%dz = 0
     self%uuold = 0
@@ -89,15 +88,15 @@ contains
     integer(local_ordinal_type), intent(in) :: gp
     real(scalar_type), intent(in) :: z(2), u(2)
     real(scalar_type), intent(in), optional :: uold(2)
-    real(scalar_type) :: eta, wt
+    real(scalar_type) :: eta
     integer(local_ordinal_type) :: i
 
     if (gp==1) then
       eta = -1.0 / sqrt(3.0)
-      wt = 1.0
+      self%wt = 1.0
     else if (gp==2) then
       eta = 1.0 / sqrt(3.0)
-      wt = 1.0
+      self%wt = 1.0
     end if
 
     ! Calculate basis function and derivatives at Gauss point
@@ -169,7 +168,7 @@ contains
       gid = gid + 1
       end do
 
-      invalid = -1
+      invalid = 0  !-1
       self%x_ghosted_map = TpetraMap(invalid, node_gids, comm)
     end if
 
@@ -296,7 +295,7 @@ contains
 
     call f%putScalar(zero)
 
-    invalid = -1
+    invalid = 0  !-1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
 
@@ -323,7 +322,7 @@ contains
 
     ! Loop over Nodes in Element
     do i = 1, 2
-    lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i))
+    lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i-1))
     if (lclrow /= invalid) then
       val = basis%wt * basis%dz * &
         (basis%uu * basis%uu * basis%phi(i) + &
@@ -373,7 +372,7 @@ contains
 
     call Jmat%setAllToScalar(zero)
 
-    invalid = -1
+    invalid = 0  ! -1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
 
@@ -468,7 +467,7 @@ contains
     ! FIXME
     ! call self%J_diagonal%putScalar(zero)
 
-    invalid = -1
+    invalid = 0  !-1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
     row_map = Mmat%getRowMap()
@@ -497,7 +496,7 @@ contains
 
     ! Loop over Nodes in Element
     do i=1, 2
-    lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i))
+    lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i-1))
     if (lclrow /= invalid) then
       ! Loop over trial functions
       do j=1, 2
