@@ -334,7 +334,7 @@ contains
     end do
 
     ! Correct for Dirichlet BCs
-    if ((my_rank == 0) .and. (ne == 0)) then
+    if ((my_rank == 0) .and. (ne == 1)) then
       lclrow = 1; col = 1
       val = udata(1) - 1.0
       call f%replaceLocalValue(lclrow, col, val)
@@ -369,6 +369,7 @@ contains
     call self%update_solution_vector(x)
 
     Jmat = operator_to_matrix(J)
+    call Jmat%resumeFill()
 
     call Jmat%setAllToScalar(zero)
 
@@ -462,6 +463,7 @@ contains
     call self%update_solution_vector(x)
 
     Mmat = operator_to_matrix(M)
+    call Mmat%resumeFill()
 
     call Mmat%setAllToScalar(zero)
     ! FIXME
@@ -516,7 +518,7 @@ contains
     end do
 
     ! Correct for Dirichlet BCs
-    if ((my_rank == 0) .and. (ne == 0)) then
+    if ((my_rank == 0) .and. (ne == 1)) then
       gblrow = 1;
       cols(1) = 1;
       vals(1) = 1.0;

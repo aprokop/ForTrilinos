@@ -79,7 +79,7 @@ contains
     call nox_solver%setup(params); FORTRILINOS_CHECK_IERR()
     status = nox_solver%solve(); FORTRILINOS_CHECK_IERR()
 
-    if (status /= 0) ierr = 1
+    if (status /= NOXConverged) ierr = 1
 
     call evaluator%release(); FORTRILINOS_CHECK_IERR()
     deallocate(evaluator)

@@ -28,8 +28,8 @@
   </ParameterList>
 
   <ParameterList name="Jacobian Settings">
-    <!-- <Parameter name="Jacobian Type" value="Analytic" type="string"/> -->
-    <Parameter name="Jacobian Type" value="Matrix Free Newton" type="string"/>
+    <Parameter name="Jacobian Type" value="Analytic" type="string"/>
+    <!-- <Parameter name="Jacobian Type" value="Matrix Free Newton" type="string"/> -->
     <Parameter name="Use Prec" value="true" type="bool"/> <!--  # If false, the linear Preconditioner Type must be None -->
     <ParameterList name="Jacobian Types">
       <ParameterList name="Matrix Free Newton">
