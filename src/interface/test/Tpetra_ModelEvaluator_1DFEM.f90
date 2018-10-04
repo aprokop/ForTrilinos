@@ -135,7 +135,7 @@ contains
     integer(global_size_type), intent(in) :: num_global_elems
     real(scalar_type), intent(in) :: z_min, z_max
     integer :: i
-    integer(global_size_type) :: num_nodes, invalid
+    integer(global_size_type) :: num_nodes
     integer(global_ordinal_type) :: min_overlap_GID, gid
     integer(size_type) :: num_overlap_nodes
     integer(size_type) :: num_vecs=1
@@ -169,8 +169,7 @@ contains
       gid = gid + 1
       end do
 
-      invalid = 0  !-1
-      self%x_ghosted_map = TpetraMap(invalid, node_gids, comm)
+      self%x_ghosted_map = TpetraMap(TPETRA_GLOBAL_INVALID, node_gids, comm)
     end if
 
     self%importer = TpetraImport(self%x_owned_map, self%x_ghosted_map)
@@ -283,7 +282,7 @@ contains
     class(TpetraMultiVector), intent(in) :: x
     class(TpetraMultiVector), intent(inout) :: f
     type(Linear2NodeFEBasis) :: basis
-    integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, lclrow
+    integer(local_ordinal_type) :: ne, num_my_elems, gp, i, lclrow
     integer(size_type) :: col
     integer :: my_rank
     integer(size_type), parameter :: ione=1
@@ -296,7 +295,6 @@ contains
 
     call f%putScalar(zero)
 
-    invalid = 0  !-1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
 
@@ -324,7 +322,7 @@ contains
     ! Loop over Nodes in Element
     do i = 1, 2
     lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i-1))
-    if (lclrow /= invalid) then
+    if (lclrow /= TPETRA_LOCAL_INVALID) then
       val = basis%wt * basis%dz * &
         (basis%uu * basis%uu * basis%phi(i) + &
         (basis%duu * basis%dphide(i))/(basis%dz * basis%dz))
@@ -357,7 +355,7 @@ contains
     class(TpetraOperator), intent(inout) :: J
     type(TpetraCrsMatrix) :: Jmat
     type(Linear2NodeFEBasis) :: basis
-    integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, jj
+    integer(local_ordinal_type) :: ne, num_my_elems, gp, i, jj
     integer(local_ordinal_type) :: lclrow, lclcol, numvalid
     integer(global_ordinal_type) :: gblrow, cols(1)
     real(scalar_type), dimension(:), pointer :: xdata
@@ -374,7 +372,6 @@ contains
 
     call Jmat%setAllToScalar(zero)
 
-    invalid = 0  ! -1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
 
@@ -402,7 +399,7 @@ contains
     ! Loop over Nodes in Element
     do i=1, 2
     lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i-1));
-    if (lclrow /= invalid) then
+    if (lclrow /= TPETRA_LOCAL_INVALID) then
       ! Loop over trial functions
       do jj=1, 2
       lclcol = ne + jj - 1;
@@ -449,7 +446,7 @@ contains
     type(TpetraCrsMatrix) :: Mmat
     type(TpetraMap) :: row_map, col_map
     type(Linear2NodeFEBasis) :: basis
-    integer(local_ordinal_type) :: ne, invalid, num_my_elems, gp, i, j
+    integer(local_ordinal_type) :: ne, num_my_elems, gp, i, j
     integer(local_ordinal_type) :: lclrow, lclcol, numvalid
     integer(global_ordinal_type) :: gblrow, cols(1)
     integer(size_type), parameter :: ione=1
@@ -470,7 +467,6 @@ contains
     ! FIXME
     ! call self%J_diagonal%putScalar(zero)
 
-    invalid = 0  !-1
     my_rank = self%comm%getRank()
     num_my_elems = self%x_ghosted_map%getNodeNumElements()-1
     row_map = Mmat%getRowMap()
@@ -500,7 +496,7 @@ contains
     ! Loop over Nodes in Element
     do i=1, 2
     lclrow = self%x_owned_map%getLocalElement(self%x_ghosted_map%getGlobalElement(ne+i-1))
-    if (lclrow /= invalid) then
+    if (lclrow /= TPETRA_LOCAL_INVALID) then
       ! Loop over trial functions
       do j=1, 2
       lclcol = ne + j
