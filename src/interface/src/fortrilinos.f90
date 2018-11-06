@@ -1072,7 +1072,8 @@ type(ForModelEvaluatorHandle), pointer :: handle
 fself_ptr = swigc_ForModelEvaluator_fhandle(self%swigdata)
 call c_f_pointer(cptr=fself_ptr, fptr=handle)
 farg1 = self%swigdata
-if (self%swigdata%mem == SWIG_OWN) then
+! if (self%swigdata%mem == SWIG_OWN) then
+if (self%swigdata%mem == SWIG_MOVE) then
 call swigc_delete_ForModelEvaluator(farg1)
 end if
 self%swigdata%ptr = C_NULL_PTR

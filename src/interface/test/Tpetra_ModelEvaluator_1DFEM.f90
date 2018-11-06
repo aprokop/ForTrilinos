@@ -26,8 +26,8 @@ module TpetraModelEvaluator1DFEM_module
     type(TpetraCrsGraph), private :: graph
     type(TpetraImport), private :: importer
     type(TpetraMultiVector), private :: node_coords
-    type(TpetraMultiVector), private, allocatable :: x
-    type(TpetraMultiVector), private, allocatable :: J_diagonal
+    type(TpetraMultiVector), private :: x
+    type(TpetraMultiVector), private :: J_diagonal
 
   contains
     procedure, private :: create_mesh
@@ -165,11 +165,12 @@ contains
       allocate(node_gids(num_overlap_nodes))
       gid = min_overlap_GID
       do i=1, num_overlap_nodes
-      node_gids(i) = gid
-      gid = gid + 1
+        node_gids(i) = gid
+        gid = gid + 1
       end do
 
       self%x_ghosted_map = TpetraMap(TPETRA_GLOBAL_INVALID, node_gids, comm)
+      deallocate(node_gids)
     end if
 
     self%importer = TpetraImport(self%x_owned_map, self%x_ghosted_map)
@@ -178,17 +179,21 @@ contains
     self%f_owned_map = self%x_owned_map
 
     ! Initialize the graph for W CrsMatrix object
-    self%graph = self%create_graph(self%x_owned_map, self%x_ghosted_map)
+    self%graph = self%create_graph(self%x_owned_map, self%x_ghosted_map) !FIXME
 
+#if 0
     ! Create the nodal coordinates
     self%node_coords = &
       self%create_mesh(self%x_owned_map, z_min, z_max, num_global_elems)
+#endif
 
     ! Allocate space for domain and solution vectors
-    allocate(self%x, source=TpetraMultiVector(self%x_ghosted_map, num_vecs))
-    allocate(self%J_diagonal, source=TpetraMultiVector(self%x_owned_map, num_vecs))
+    self%x = TpetraMultiVector(self%x_ghosted_map, num_vecs)
+    self%J_diagonal = TpetraMultiVector(self%x_owned_map, num_vecs)
 
+#if 0
     call self%x%doImport(self%node_coords, self%importer, TpetraINSERT)
+#endif
 
   end function new_TpetraModelEvaluator1DFEM
 
@@ -206,6 +211,7 @@ contains
 
     ! Create the shell for the graph
     num_ent_per_row = 5
+#if 0
     graph = TpetraCrsGraph(owned_map, ghosted_map, num_ent_per_row, TpetraDynamicProfile)
 
     ! Declare required variables
@@ -233,6 +239,7 @@ contains
     end do
 
     call graph%fillComplete()
+#endif
 
   end function create_graph
 
@@ -577,6 +584,8 @@ contains
   subroutine delete_TpetraModelEvaluator1DFEM(self)
     class(TpetraModelEvaluator1DFEM), intent(inout) :: self
 
+    write(*,*) 'Inherited: release()'
+
     call self%comm%release()
     call self%x_owned_map%release()
     call self%x_ghosted_map%release()
@@ -585,12 +594,10 @@ contains
     call self%importer%release()
     call self%node_coords%release()
     call self%x%release()
-    deallocate(self%x)
     call self%J_diagonal%release()
-    deallocate(self%J_diagonal)
 
-    ! Need to downcast and call base%release()
-    ! call self%release()
+    ! Call base class release()
+    call self%ForModelEvaluator%release()
   end subroutine
 
 end module TpetraModelEvaluator1DFEM_module

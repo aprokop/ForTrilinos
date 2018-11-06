@@ -13,6 +13,7 @@ module myoperators
     procedure :: apply => my_apply
     procedure :: getDomainMap => my_getDomainMap
     procedure :: getRangeMap => my_getRangeMap
+    procedure :: release => delete_TriDiagOperator
   end type
   interface TriDiagOperator
     procedure new_TriDiagOperator
@@ -125,6 +126,21 @@ contains
 
     range_map = self%range_map
   end function
+
+  subroutine delete_TriDiagOperator(self)
+    class(TriDiagOperator), intent(inout) :: self
+
+    write(*,*) 'Inherited: release()'
+
+    call self%row_map%release()
+    call self%col_map%release()
+    call self%domain_map%release()
+    call self%range_map%release()
+
+    ! Call base class release()
+    call self%ForTpetraOperator%release()
+  end subroutine
+
 
 end module
 
@@ -303,21 +319,19 @@ program main
   call krylov_list%set('Maximum Iterations', 333)
 
   allocate(op, source=TriDiagOperator(map, A%getColMap()))
+  call init_ForTpetraOperator(op); FORTRILINOS_CHECK_IERR()
 
   ! Step 1: initialize a handle
   call solver_handle%init(comm); FORTRILINOS_CHECK_IERR()
 
   ! Step 2: setup the problem
   ! Implicit (inversion-of-control) setup
-  call init_ForTpetraOperator(op); FORTRILINOS_CHECK_IERR()
   call solver_handle%setup_operator(op); FORTRILINOS_CHECK_IERR()
 
   ! Step 3: setup the solver
+  call solver_handle%setup_solver(plist); FORTRILINOS_CHECK_IERR() ! FIXME
 
-  call solver_handle%setup_solver(plist); FORTRILINOS_CHECK_IERR()
-
-  call krylov_list%release()
-
+#if 0
   ! Step 4: solve the system
   call X%randomize()
   call solver_handle%solve(B, X); FORTRILINOS_CHECK_IERR()
@@ -329,6 +343,7 @@ program main
     write(error_unit, '(A, ES14.7)') '   diff_norm =', norms(1)
     stop 666
   end if
+#endif
 
   ! Step 5: clean up
   call solver_handle%finalize(); FORTRILINOS_CHECK_IERR()
@@ -344,15 +359,16 @@ program main
   call solver_handle%release(); FORTRILINOS_CHECK_IERR()
   call plist%release(); FORTRILINOS_CHECK_IERR()
   call X%release(); FORTRILINOS_CHECK_IERR()
+  call Xtrue%release(); FORTRILINOS_CHECK_IERR()
   call B%release(); FORTRILINOS_CHECK_IERR()
   call A%release(); FORTRILINOS_CHECK_IERR()
   call map%release(); FORTRILINOS_CHECK_IERR()
   call comm%release(); FORTRILINOS_CHECK_IERR()
-  deallocate(norms)
-  deallocate(cols)
-  deallocate(vals)
-  deallocate(lhs)
-  deallocate(rhs)
+  ! deallocate(norms)
+  ! deallocate(cols)
+  ! deallocate(vals)
+  ! deallocate(lhs)
+  ! deallocate(rhs)
 
 #ifdef HAVE_MPI
   ! Finalize MPI must be called after releasing all handles

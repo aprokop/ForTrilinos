@@ -74,13 +74,15 @@ contains
     z_min = 0.0
     z_max = 1.0
     allocate(evaluator, source=TpetraModelEvaluator1DFEM(comm, num_global_elems, z_min, z_max))
-
     call init_ForModelEvaluator(evaluator); FORTRILINOS_CHECK_IERR()
+
+#if 0
     call evaluator%setup(params); FORTRILINOS_CHECK_IERR()
 
     nox_solver = NOXSolver(evaluator)
     call nox_solver%setup(params); FORTRILINOS_CHECK_IERR()
     status = nox_solver%solve(); FORTRILINOS_CHECK_IERR()
+#endif
 
     if (status /= NOXConverged) ierr = 1
 
