@@ -111,9 +111,18 @@ namespace ForTrilinos {
   template<class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node>
   NOX::StatusTest::StatusType
   NOXSolver<Scalar, LocalOrdinal, GlobalOrdinal, Node>::
-  NOXSolver::solve(Teuchos::RCP<MultiVector> initial_guess)
+  NOXSolver::solve(Teuchos::RCP<const MultiVector> initial_guess)
   {
-    // TODO: set initial guess
+    if (!initial_guess.is_null()) {
+      Teuchos::RCP<const Thyra::VectorBase<Scalar> > thyra_guess =
+          Thyra::createConstVector(initial_guess->getVector(0));
+
+      NOX::Thyra::Vector nox_guess(*thyra_guess);
+
+      // FIXME: do we need to reset status tests too?
+      solver_->reset(nox_guess);
+    }
+
     return solver_->solve();
   }
 
@@ -124,6 +133,9 @@ namespace ForTrilinos {
     auto& solution_group = solver_->getSolutionGroup();
     NOX::Thyra::Vector const& x_nox_thyra = dynamic_cast<NOX::Thyra::Vector const&>(solution_group.getX());
     Thyra::VectorBase<double> const& x_thyra = x_nox_thyra.getThyraVector();
+    auto v = Thyra::TpetraOperatorVectorExtraction<SC,LO,GO,NO>::getConstTpetraMultiVector(Teuchos::rcpFromRef(x_thyra));
+    assert(!v.is_null());
+
     return Thyra::TpetraOperatorVectorExtraction<SC,LO,GO,NO>::getConstTpetraMultiVector(Teuchos::rcpFromRef(x_thyra));
   }
 }

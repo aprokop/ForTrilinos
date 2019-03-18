@@ -34,7 +34,7 @@ namespace ForTrilinos {
 
     NOXSolver(const Teuchos::RCP<ModelEvaluator<Scalar, LocalOrdinal, GlobalOrdinal, Node>>& model);
     void setup(Teuchos::RCP<Teuchos::ParameterList>& plist);
-    NOX::StatusTest::StatusType solve(Teuchos::RCP<MultiVector> initial_guess = Teuchos::null);
+    NOX::StatusTest::StatusType solve(Teuchos::RCP<const MultiVector> initial_guess = Teuchos::null);
     Teuchos::RCP<const MultiVector> get_solution() const;
 
   private:

@@ -52,7 +52,6 @@ void fill_analytic_solution(Tpetra::MultiVector<Scalar>& x)
 int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
           Teuchos::RCP<Teuchos::ParameterList>& plist)
 {
-
   using Teuchos::RCP;
   using Teuchos::rcp;
 
@@ -78,6 +77,13 @@ int main2(Teuchos::RCP<const Teuchos::Comm<int>>& comm,
   auto solution = nox_solver.get_solution();
   Tpetra::MultiVector<Scalar> analytic_solution(solution->getMap(), 1);
   fill_analytic_solution(analytic_solution);
+
+  // Now, solve with solution as initial guess, which should converge in a
+  // single iteration
+  solve_status = nox_solver.solve(solution);
+
+  returncode |= (solve_status == NOX::StatusTest::Converged) ? 0 : 1;
+
 
   Teuchos::TimeMonitor::summarize();
 
