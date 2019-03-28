@@ -16,7 +16,7 @@ IF (${PACKAGE_NAME}_ENABLE_Belos AND ${PACKAGE_NAME}_ENABLE_Ifpack2)
 
   TRIBITS_ADD_EXECUTABLE_AND_TEST(
     test_solver_handle_test_fortran
-    SOURCES test_solver_handle.f90
+    SOURCES test_solver_handle.f90 timerlib.f90
     LINKER_LANGUAGE Fortran
     COMM serial mpi
   )

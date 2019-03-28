@@ -165,6 +165,7 @@ program main
   use fortpetra
   use fortest
   use myoperators
+  use timerlib, only : Timer
   implicit none
 
   integer(int_type) :: my_rank, num_procs
@@ -192,7 +193,11 @@ program main
   integer(global_ordinal_type), dimension(:), allocatable :: cols
   real(scalar_type), dimension(:), allocatable :: vals
 
-  n = 10
+  type(Timer) :: tm
+
+  n = 1000000
+
+  call tm%create()
 
 #ifdef HAVE_MPI
   ! Initialize MPI subsystem
@@ -216,6 +221,7 @@ program main
 
   ! ------------------------------------------------------------------
   ! Step 0: Construct tri-diagonal matrix
+  call tm%start()
   n_global = -1
   map = TpetraMap(n_global, n, comm); FORTRILINOS_CHECK_IERR()
 
@@ -244,6 +250,9 @@ program main
     call A%insertGlobalValues(offset + i, cols(1:row_nnz-1), vals(1:row_nnz-1)); FORTRILINOS_CHECK_IERR()
   end do
   call A%fillComplete(); FORTRILINOS_CHECK_IERR()
+  call tm%stop
+  write(*,*) 'Time: matrix construction', tm%walltime()
+  call tm%reset()
 
   ! This automatically zeroes out X
   X = TpetraMultiVector(map, num_vecs); FORTRILINOS_CHECK_IERR()
@@ -288,25 +297,34 @@ program main
   call solver_handle%setup_matrix(A); FORTRILINOS_CHECK_IERR()
 
   ! Step 3: setup the solver
+  call tm%start()
   call solver_handle%setup_solver(plist); FORTRILINOS_CHECK_IERR()
+  call tm%stop
+  write(*,*) 'Time: solver setup', tm%walltime()
+  call tm%reset()
 
   ! Step 4: solve the system
   call X%randomize()
+  call tm%start()
   call solver_handle%solve(B, X); FORTRILINOS_CHECK_IERR()
+  call tm%stop
+  write(*,*) 'Time: solver solve', tm%walltime()
+  call tm%reset()
 
   ! Check the solution
-  call X%update(-one, Xtrue, one); FORTRILINOS_CHECK_IERR()
-  call X%norm2(norms); FORTRILINOS_CHECK_IERR()
+  ! call X%update(-one, Xtrue, one); FORTRILINOS_CHECK_IERR()
+  ! call X%norm2(norms); FORTRILINOS_CHECK_IERR()
 
   ! TODO: Get the tolerance out of the parameter list
-  if (norms(1) > 1e-6) then
-    write(error_unit, '(A)') 'The solver did not converge to the specified residual!'
-    stop 1
-  end if
+  ! if (norms(1) > 1e-6) then
+    ! write(error_unit, '(A)') 'The solver did not converge to the specified residual!'
+    ! stop 1
+  ! end if
 
   ! Step 5: clean up
   call solver_handle%finalize(); FORTRILINOS_CHECK_IERR()
 
+#if 0
   ! ------------------------------------------------------------------
   ! Implicit (inversion-of-control) setup [ no solve ]
   ! ------------------------------------------------------------------
@@ -358,6 +376,7 @@ program main
   call op%release(); FORTRILINOS_CHECK_IERR()
   deallocate(op)
   ! ------------------------------------------------------------------
+#endif
 
   call solver_handle%release(); FORTRILINOS_CHECK_IERR()
   call plist%release(); FORTRILINOS_CHECK_IERR()
